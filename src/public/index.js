@@ -56,21 +56,8 @@ const { left: TX, top: TY } = discard.getBoundingClientRect();
 discard.onclick = () => {
     const cards = Array.from(handElements[Math.floor(Math.random() * handElements.length)].children);
     const card = cards[Math.floor(Math.random() * cards.length)];
-    //const card = handElements[0].children.item(0);
+    // const card = handElements[4].children.item(0);
     moveFlipSwap(card, TX, TY, "url('./trans.png')");
-}
-
-
-function getTransformToAncestorMatrix(el, ancestor = document.body) {
-    let node = el
-    let m = new DOMMatrix()
-    while (node && node !== ancestor && node instanceof Element) {
-        const style = getComputedStyle(node)
-        const t = style.transform && style.transform !== 'none' ? new DOMMatrix(style.transform) : new DOMMatrix()
-        m = t.multiply(m)
-        node = node.parentElement
-    }
-    return m
 }
 
 function moveFlipSwap(el, x, y, newBg, duration = 1000) {
@@ -78,20 +65,29 @@ function moveFlipSwap(el, x, y, newBg, duration = 1000) {
     const globalTarget = new DOMPoint(x, y)
     const globalCurrent = new DOMPoint(rect.left, rect.top)
 
-    const m = getTransformToAncestorMatrix(el, document.body)
-    const inv = m.inverse()
+    const style = getComputedStyle(el.parentElement.parentElement);
+    const comp = new DOMMatrix(style.transform);
+    const rot = Math.atan2(comp.b, comp.a) * (180 / Math.PI);
+    const inv = comp.inverse();
 
     const localTarget = inv.transformPoint(globalTarget)
     const localCurrent = inv.transformPoint(globalCurrent)
 
-    const dx = localTarget.x - localCurrent.x
-    const dy = localTarget.y - localCurrent.y
+    let dx = localTarget.x - localCurrent.x;
+    let dy = localTarget.y - localCurrent.y;
+    if (rot === -90) {
+        dx += 51;
+        dy += 80;
+    } else if (rot === 180) {
+        dx -= 27;
+        dy += 80;
+    }
 
     const anim = el.animate(
         [
             { transform: 'translate(0px, 0px) rotateY(0deg)' },
-            { transform: `translate(${dx}px, ${dy}px) rotateY(90deg)` },
-            { backgroundImage: newBg, transform: `translate(${dx}px, ${dy}px) rotateY(180deg)` }
+            { transformOrigin: 'top left', transform: `translate(${dx}px, ${dy}px) rotateY(90deg) rotateX(${rot}deg) scale(1.25)` },
+            { transformOrigin: 'top left', backgroundImage: newBg, transform: `translate(${dx}px, ${dy}px) rotateY(180deg) rotate(${rot}deg) scale(1.5)` }
         ],
         {
             duration,

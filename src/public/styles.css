@@ -53,15 +53,17 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform-origin: center;
+    transform: translate(-50%, -50%) scale(1.5);
 }
 
 #table .card {
-    margin: 0;
+    margin: 10px;
 }
 
 body {
     margin: 0;
     width: 100vw;
     height: 100vh;
+    background: radial-gradient(#22A, #112);
 }
