@@ -8,13 +8,11 @@
     <!--  -->
     <style>
         body {
-            overflow: hidden;
         }
         center {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            justify-content: space-between;
+            flex-wrap: wrap;
         }
         center > div {
             border: 2px solid gray;
@@ -23,11 +21,13 @@
             margin: 10px;
             cursor: pointer;
             width: 80px;
+            /*height: 80px;*/
             background: #e0e0e0;
             position: relative;
             overflow: hidden;
+            transition: width 0.3s ease, height 0.3s ease;
         }
-        center > div::after {
+        center > div:not(.expand)::after {
             content: '';
             position: absolute;
             top: 50%;
@@ -35,18 +35,24 @@
             width: 0;
             height: 0;
             background: rgba(0, 0, 0, 0.15);
-            border-radius: 5px;
             transform: translate(-50%, -50%);
             transition: width 0.4s ease, height 0.4s ease;
         }
-        center > div:hover::after {
+        center > div:not(.expand):hover::after {
             width: 200%;
             height: 200%;
+        }
+        center > div.expand {
+            text-align: left;
+            width: 230px;
+            /*height: 220px; /* double */*/
         }
     </style>
 </head>
 <body>
     <center id="list"></center>
+    <hr>
+    <input placeholder="Search">
     <script src="./index.js"></script>
 </body>
 </html>
