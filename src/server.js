@@ -16,6 +16,50 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const DefaultConfig = {
+    name: "Room",
+    public: "on",
+    code: "",
+    maxPlayers: 100
+};
+let maxRoomId = 0;
+const ipToRoom = new Map, idToRoom = new Map;
+const rooms = new Set;
+
+class Room {
+    constructor(ownerIp, gameId, settings) {
+        this.id = maxRoomId++;
+        this.ownerIp = ownerIp;
+        this.gameId = gameId;
+        this.settings = Object.assign(DefaultConfig, require(`./public/games/${gameId}/settings`), settings);
+        this.clients = new Set;
+        ipToRoom.get(ownerIp)?.destroy();
+        rooms.add(this);
+        ipToRoom.set(ownerIp, this);
+        idToRoom.set(this.id, this);
+    }
+    join(ws, req) {
+        if (this.clients.size === this.settings.maxPlayers)
+            return ws.close(1006, 'Room Full');
+        // if (this.settings.public === "off" && )
+        //     return ws.close(1006, 'Room Full');
+        // if (this.clients.size === this.settings.maxPlayers)
+        //     return ws.close(1006, 'Room Full');
+    }
+    destroy() {
+        for (const ws of this.clients)
+            ws.close(1006, 'Room Destroyed');
+        rooms.delete(this);
+        ipToRoom.delete(this.ownerIp);
+        idToRoom.delete(this.id);
+    }
+    get url() {
+        let s = `/games/${this.gameId}?id=${this.id}`;
+        if (this.settings.public === "on")
+            s += `&code=${encodeURIComponent(this.settings.code)}`;
+        return s;
+    }
+}
 
 app.get('/games', (req, res) => res.status(200).send(games));
 app.post('/make/:id/', (req, res) => {
