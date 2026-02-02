@@ -1,0 +1,56 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Card Games</title>
+    <style>
+        #config {
+            margin: 30px;
+        }
+        #config > span {
+            font-size: 20px;
+        }
+        #config > span > * {
+            text-align: center;
+            width: 100px;
+            float: right;
+        }
+        #config button {
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <center><h1>Configure</h1></center>
+    <form id="config" action="." method="POST">
+        <span>Name<input name="name" type="text" maxlength="20"></span><br>
+        <span>Public<input name="public" type="checkbox" checked></span><br>
+        <span>Code<input name="code" type="text" maxlength="8"></span><br>
+        <span>Max Players<input name="maxPlayers" type="number" min="0" max="100" value="100"></span><br>
+        <br>
+        <span>Start Cards<input name="startCards" type="number" min="0" max="100" value="7"></span><br>
+        <span>Interceptions<input name="interceptions" type="checkbox" checked></span><br>
+        <span>Liar<input name="liar" type="checkbox"></span><br>
+        <span>Twins<select name="twins">
+            <option value="alike">ALIKE</option>
+            <option value="mixed">MIXED</option>
+            <option value="off">OFF</option>
+        </select></span><br>
+        <span>Counter Color<input name="counterColor" type="checkbox"></span><br>
+        <span>Stack Plus Four<input name="stackPlusFour" type="checkbox"></span><br>
+        <span>Joker Cancels Plus Two<input name="jokerCancelsPlusTwo" type="checkbox" checked></span><br>
+
+        <span>Wrong Card Penality<input name="wrongCardPenality" type="number" min="0" max="100" value="2"></span><br>
+        <span>Counter Uno Penality<input name="counterUnoPenality" type="number" min="0" max="100" value="2"></span><br>
+        <span>Liar Oponent Penality<input name="liarOponentPenality" type="number" min="0" max="100" value="2"></span><br>
+        <span>Liar Self Penality<input name="liarSelfPenality" type="number" min="0" max="100" value="2"></span><br>
+        <center><button type="submit">Create</button></center>
+    </form>
+    <hr>
+    <center><h1>Public Rooms</h1></center>
+    <script src="./index.js"></script>
+</body>
+</html>
