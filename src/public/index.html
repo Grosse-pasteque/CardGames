@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Card Games</title>
+    <!-- <link rel="stylesheet" type="text/css" href="./styles.css"> -->
+    <!--  -->
+    <style>
+        body {
+            overflow: hidden;
+        }
+        center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        center > div {
+            border: 2px solid gray;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 10px;
+            cursor: pointer;
+            width: 80px;
+            background: #e0e0e0;
+            position: relative;
+            overflow: hidden;
+        }
+        center > div::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 5px;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+        center > div:hover::after {
+            width: 200%;
+            height: 200%;
+        }
+    </style>
+</head>
+<body>
+    <center id="list"></center>
+    <script src="./index.js"></script>
+</body>
+</html>
