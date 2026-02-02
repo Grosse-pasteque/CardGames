@@ -98,3 +98,34 @@ function moveFlipSwap(el, x, y, newBg, duration = 1000) {
 
     return anim
 }
+
+const ws = new WebSocket(`ws://localhost:8888${location.pathname}${location.search}&nickname=${prompt('Nickname?')}`);
+ws.onmessage = message => {
+    const data = JSON.parse(message.data);
+    switch (data.type) {
+        // Actions
+        case PLAYER_SKIPPED:
+            // player id
+            break;
+        case PLAYER_PLAYED:
+            // player id
+            // card
+            break;
+        case PLAYER_DREW:
+            // player id
+            break;
+
+        case GAME_INIT:
+            // cards count of each player
+            // own deck
+            break;
+        case GAME_START:
+            // current card
+            break;
+        case GAME_SUMMARY:
+            // player id
+            // points
+            break;
+    }
+};
+// ws.onclose = handleClose;

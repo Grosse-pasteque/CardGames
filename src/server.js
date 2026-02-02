@@ -16,9 +16,14 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const State = {
+    ON: "on",
+    OFF: "off",
+    ALIKE: "alike"
+};
 const DefaultConfig = {
     name: "Room",
-    public: "on",
+    public: State.ON,
     code: "",
     maxPlayers: 100
 };
@@ -41,7 +46,7 @@ class Room {
     join(ws, req) {
         if (this.clients.size === this.settings.maxPlayers)
             return ws.close(1006, 'Room Full');
-        // if (this.settings.public === "off" && )
+        // if (this.settings.public === State.OFF && )
         //     return ws.close(1006, 'Room Full');
         // if (this.clients.size === this.settings.maxPlayers)
         //     return ws.close(1006, 'Room Full');
@@ -55,7 +60,7 @@ class Room {
     }
     get url() {
         let s = `/games/${this.gameId}?id=${this.id}`;
-        if (this.settings.public === "on")
+        if (this.settings.public === State.OFF)
             s += `&code=${encodeURIComponent(this.settings.code)}`;
         return s;
     }
