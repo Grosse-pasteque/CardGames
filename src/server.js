@@ -48,6 +48,7 @@ class Room {
         rooms.add(this);
         ipToRoom.set(ownerIp, this);
         idToRoom.set(this.id, this);
+        updateRoomStatus(this);
     }
     join(ws, req) {
         if (this.clients.size === this.settings.maxPlayers)
@@ -63,6 +64,7 @@ class Room {
         rooms.delete(this);
         ipToRoom.delete(this.ownerIp);
         idToRoom.delete(this.id);
+        deleteRoomStatus(this);
     }
     get url() {
         let s = `/games/${this.gameId}?id=${this.id}`;
@@ -73,6 +75,7 @@ class Room {
 }
 
 app.get('/games', (req, res) => res.status(200).send(games));
+app.get('/rooms', (req, res) => res.status(200).send([...rooms].map(getRoomStatus)));
 app.post('/make/:id/', (req, res) => {
     const room = new Room(req.ip, req.params.id, req.body);
     res.redirect(303, room.url); // prevents form resubmission
@@ -99,19 +102,45 @@ const games = [{
 }];
 
 setInterval(() => {
-    for (const ws of realtimeClients) {
-        const id = ~~(Math.random() * 3);
-        ws.send(JSON.stringify({
-            type: PayloadType.GAME_STATUS_UPDATE,
-            data: {
-                id: games[id].id,
-                name: games[id].name,
-                waiting: ~~(Math.random() * 20),
-                running: ~~(Math.random() * 20)
-            }
-        }));
-    }
+    const id = ~~(Math.random() * 3);
+    broadcastRealtime({
+        type: PayloadType.GAME_STATUS_UPDATE,
+        data: {
+            id: games[id].id,
+            name: games[id].name,
+            waiting: ~~(Math.random() * 20),
+            running: ~~(Math.random() * 20)
+        }
+    });
 }, 1000);
+
+function broadcastRealtime(data) {
+    data = JSON.stringify(data);
+    for (const ws of realtimeClients) ws.send(data);
+}
+
+function updateRoomStatus(room) {
+    if (room.settings.public === State.ON) broadcastRealtime({
+        type: PayloadType.ROOM_STATUS_UPDATE,
+        data: getRoomStatus(room)
+    });
+}
+
+function deleteRoomStatus(room) {
+    if (room.settings.public === State.ON) broadcastRealtime({
+        type: PayloadType.ROOM_STATUS_DELETE,
+        data: room.id
+    });
+}
+
+function getRoomStatus(room) {
+    return {
+        id: room.id,
+        game: room.gameId,
+        name: room.settings.name,
+        players: room.clients.size
+    }
+}
 
 wss.on('connection', (ws, req) => {
     console.log(req.url);
@@ -120,7 +149,12 @@ wss.on('connection', (ws, req) => {
         ws.on('message', () => {
             ws.close(1006, 'Unauthorized');
         });
-    } else if (req.url.startsWith('/games')) {}
+    } else if (req.url.startsWith('/games')) {
+        // "/games/.../?id=...&nickname=...&code=..."
+        const [,, game, params] = req.url.split('/');
+        const u = new URLSearchParams(params);
+        console.log(game, u.get('id'), u.get('nickname', ''), u.get('code'));
+    }
 });
 
 server.listen(8888, () => {

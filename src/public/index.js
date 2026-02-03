@@ -4,8 +4,7 @@ const PayloadType = {
     ROOM_STATUS_DELETE: 2,
 };
 
-let games;
-const rooms = [];
+let games, rooms;
 const gameItems = {},
     roomItems = {};
 const [gamesList, roomsList] = document.querySelectorAll('.list');
@@ -26,13 +25,16 @@ realtime.onmessage = message => {
 };
 
 (async () => {
-    const rk = await fetch('http://localhost:8888/games');
+    let rk = await fetch('http://localhost:8888/games');
     games = await rk.json();
     games.forEach(updateGameItem);
     gamesList.addEventListener('click', e => {
         if (e.target.tagName !== 'DIV') return;
         location.href = location.origin + '/make/' + e.target.dataset.id;
     });
+    rk = await fetch('http://localhost:8888/rooms');
+    rooms = await rk.json();
+    rooms.forEach(updateRoomItem);
     roomsList.addEventListener('click', e => {
         if (e.target.tagName !== 'DIV') return;
         location.href = location.origin + '/games/' + e.target.dataset.game + '?id=' + e.target.dataset.id;
