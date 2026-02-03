@@ -1,6 +1,7 @@
 const PayloadType = {
     GAME_STATUS_UPDATE: 0,
     ROOM_STATUS_UPDATE: 1,
+    ROOM_STATUS_DELETE: 2,
 };
 
 let games;
@@ -18,6 +19,9 @@ realtime.onmessage = message => {
         case PayloadType.ROOM_STATUS_UPDATE:
             updateRoomItem(data);
             break;
+        case PayloadType.ROOM_STATUS_DELETE:
+            deleteRoomItem(data);
+            break;
     }
 };
 
@@ -31,7 +35,7 @@ realtime.onmessage = message => {
     });
     roomsList.addEventListener('click', e => {
         if (e.target.tagName !== 'DIV') return;
-        location.href = location.origin + '/games/' + e.target.dataset.id + '?id='; // TODO: missing room id
+        location.href = location.origin + '/games/' + e.target.dataset.game + '?id=' + e.target.dataset.id;
     });
 })();
 
@@ -43,6 +47,12 @@ function updateGameItem(game) {
 
 function updateRoomItem(room) {
     const item = (roomItems[room.id] ||= roomsList.appendChild(document.createElement('div')));
+    item.dataset.game = room.game;
     item.dataset.id = room.id;
     item.innerHTML = `<b>${room.name}</b><br>Players: ${room.players}`;
+}
+
+function deleteRoomItem(roomId) {
+    roomsList.removeChild(roomItems[roomId]);
+    delete roomItems[roomId];
 }

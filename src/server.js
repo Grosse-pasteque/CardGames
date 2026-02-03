@@ -30,6 +30,7 @@ const DefaultConfig = {
 const PayloadType = {
     GAME_STATUS_UPDATE: 0,
     ROOM_STATUS_UPDATE: 1,
+    ROOM_STATUS_DELETE: 2,
 };
 
 let maxRoomId = 0;
