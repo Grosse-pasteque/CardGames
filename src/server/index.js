@@ -44,6 +44,7 @@ class Room {
         this.gameId = gameId;
         this.settings = Object.assign(DefaultConfig, require(`./public/games/${gameId}/settings`), settings);
         this.clients = new Set;
+        this.handlers = {};
         ipToRoom.get(ownerIp)?.destroy();
         rooms.add(this);
         ipToRoom.set(ownerIp, this);
@@ -154,11 +155,18 @@ function getRoomStatus(room) {
     }
 }
 
+const ipsOnCooldown = new Map;
 wss.on('connection', (ws, req) => {
+    ws.ip = ws._socket.remoteAddress;
+    const cooldown = ipsOnCooldown.get(ws.ip);
+    const now = Date.now();
+    if (cooldown && cooldown > now)
+        return ws.close(1009, 'On cooldown');
     console.log(req.url);
     if (req.url === '/realtime') {
         realtimeClients.add(ws);
         ws.on('message', () => {
+            ipsOnCooldown.set(ws.ip, Date.now() + 60000);
             ws.close(1009, 'Unauthorized');
         });
     } else {
@@ -167,9 +175,17 @@ wss.on('connection', (ws, req) => {
             code = u.get('code') || '';
         const room = idToRoom.get(id);
         if (!room) return ws.close(1009, 'Unknown room');
-        ws.ip = ws._socket.remoteAddress;
         ws.nickname = u.get('nickname') || '';
         room.join(ws, req, code);
+        ws.on('message', message => {
+            try {
+                var { type, data } = JSON.parse(message);
+            } catch {
+                ipsOnCooldown.set(ws.ip, Date.now() + 60000);
+                ws.close(1009, 'Unauthorized');
+            }
+            room.handlers[type]?.call(ws, data);
+        });
         ws.on('close', () => room.leave(ws));
     }
 });
