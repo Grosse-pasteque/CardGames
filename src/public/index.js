@@ -3,6 +3,11 @@ const gameItems = {},
 
 const [gamesList, roomsList] = document.querySelectorAll('.list');
 
+nickname.value = localStorage.nickname || '';
+nickname.addEventListener('change', () => {
+    localStorage.setItem('nickname', nickname.value);
+});
+
 (async function() {
     const PayloadType = await jsonFetch('/enums/PayloadType');
 
