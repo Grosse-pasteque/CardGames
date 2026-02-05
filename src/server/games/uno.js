@@ -45,6 +45,10 @@ class UnoRoom extends Room {
         this.turn = 0;
         this.direction = 1; // -1
         this.top = null;
+        this.isRunning = false;
+        this.handlers = {
+            [UnoPayloadType.HOST_START]: this.start.bind(this)
+        };
     }
     leave(...args) {
         super.leave(...args);
@@ -64,7 +68,9 @@ class UnoRoom extends Room {
             }
         });
     }
-    start() {
+    start(host) {
+        if (host.ip !== this.ownerIp || this.isRunning || this.clients.size < 2) return;
+        this.isRunning = true;
         // freeze clients
         this.players = [...this.clients];
         // shuffle
