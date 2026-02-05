@@ -6,8 +6,9 @@
 
     "GAME_TURN": 3,
     "GAME_STATUS": 4,
-    "GAME_START": 5,
-    "GAME_SUMMARY": 6,
+    "GAME_STARTED": 5,
+    "GAME_BEGIN": 6,
+    "GAME_SUMMARY": 7,
 
-    "HOST_START": 7
+    "HOST_START": 8
 }

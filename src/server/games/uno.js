@@ -17,6 +17,10 @@ const CardColor = {
     BLACK: 4
 };
 
+function sleep(s) {
+    return new Promise(r => setTimeout(r, s * 1000));
+}
+
 function number(value, color) {
     return { type: CardType.NUMBER, value, color };
 }
@@ -68,22 +72,47 @@ class UnoRoom extends Room {
             }
         });
     }
-    start(host) {
+    draw(player) {
+        const card = this.pile.pop();
+        player.hand.push(card);
+        player.send(JSON.stringify({
+            type: UnoPayloadType.RECEIVE_CARD,
+            data: card
+        }));
+        this.broadcast({
+            type: UnoPayloadType.PLAYER_DREW,
+            data: player.index
+        });
+    }
+    async start(host) {
         if (host.ip !== this.ownerIp || this.isRunning || this.clients.size < 2) return;
         this.isRunning = true;
+        this.broadcast({
+            type: UnoPayloadType.GAME_STARTED
+        });
         // freeze clients
         this.players = [...this.clients];
         // shuffle
         for (let i = 0; i < CARDS_COUNT; i++)
             this.pile.push(this.discard.splice(Math.floor(Math.random() * CARDS_COUNT), 1));
         // distribute
-        for (let player of this.players)
+        let index = 0;
+        for (const player of this.players) {
             player.hand = [];
+            player.index = index++;
+        }
         for (let i = 0; i < 7; i++)
-            for (let player of this.players)
-                player.hand.push(this.pile.pop());
+            for (const player of this.players) {
+                this.draw(player);
+                await sleep(0.7); // TODO: make that configurable
+            }
         // draw first card
+        await sleep(3);
         this.top = this.pile.pop();
+        this.broadcast({
+            type: UnoPayloadType.GAME_BEGIN,
+            data: this.top
+        });
     }
     play(player, card) {
         // redefine top in function of what this player plays

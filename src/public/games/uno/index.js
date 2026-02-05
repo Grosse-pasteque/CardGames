@@ -2,6 +2,8 @@ const s = new URLSearchParams(location.search);
 const roomId = s.get('id');
 const isHost = s.get('host') === "true";
 
+let playerNicknames = [];
+
 (async function() {
     const PayloadType = await jsonFetch('/enums/UnoPayloadType');
 
@@ -17,31 +19,33 @@ const isHost = s.get('host') === "true";
             // Broadcast
             // NOTE: would be better to send those offer HTTP in it fails
             case PayloadType.PLAYER_DISCARDED:
-                // player id
+                // player index
                 // card id
                 break;
             case PayloadType.PLAYER_DREW:
-                // player id
+                // player index
                 break;
 
             // All
             case PayloadType.GAME_TURN: // whose turn is it
-                // player id
+                // player index
                 break;
             case PayloadType.GAME_STATUS: // on player join / leave
-                // player count
                 // spectator count
+                playerNicknames = data.players;
                 let i = 1, content = '<table><tbody>';
-                for (const nickname of data.players)
+                for (const nickname of playerNicknames)
                     content += `<tr><td>${i++}</td><td>${nickname}</td></tr>`;
                 popup.innerHTML = content + '</tbody></table>';
                 break;
-            case PayloadType.GAME_START: // when host starts
-                // cards count of each player
+            case PayloadType.GAME_STARTED: // when host starts
+                start.hidden = true;
+                break;
+            case PayloadType.GAME_BEGIN: // when game begins
                 // top card
                 break;
             case PayloadType.GAME_SUMMARY: // end game
-                // player id
+                // player index
                 // points
                 break;
         }
