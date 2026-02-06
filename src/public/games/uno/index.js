@@ -7,7 +7,7 @@ let players = {}, playerId;
 (async function() {
     const PayloadType = await jsonFetch('/enums/UnoPayloadType');
 
-    const ws = new WebSocket(`ws://localhost:8888?id=${roomId}&nickname=${localStorage.nickname || ''}`);
+    const ws = new WebSocket(`ws://localhost:8888?id=${roomId}&nickname=${encodeURIComponent(localStorage.nickname || '')}`);
     ws.onmessage = message => {
         const { type, data } = JSON.parse(message.data);
         switch (type) {
