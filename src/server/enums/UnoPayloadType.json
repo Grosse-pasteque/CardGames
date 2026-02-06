@@ -3,12 +3,14 @@
 
     "PLAYER_DISCARDED": 1,
     "PLAYER_DREW": 2,
+    "PLAYER_LEAVE": 3,
+    "PLAYER_JOIN": 4,
+    "PLAYER_ID": 5,
 
-    "GAME_TURN": 3,
-    "GAME_STATUS": 4,
-    "GAME_STARTED": 5,
-    "GAME_BEGIN": 6,
-    "GAME_SUMMARY": 7,
+    "GAME_TURN": 6,
+    "GAME_STARTED": 7,
+    "GAME_BEGIN": 8,
+    "GAME_SUMMARY": 9,
 
-    "HOST_START": 8
+    "HOST_START": 10
 }

@@ -54,23 +54,36 @@ class UnoRoom extends Room {
             [UnoPayloadType.HOST_START]: this.start.bind(this)
         };
     }
-    leave(...args) {
-        super.leave(...args);
+    leave(ws) {
+        super.leave(ws);
         this.broadcast({
-            type: UnoPayloadType.GAME_STATUS,
-            data: {
-                players: [...this.clients].map(ws => ws.nickname)
-            }
+            type: UnoPayloadType.PLAYER_LEAVE,
+            data: ws.id
         });
     }
-    join(...args) {
-        super.join(...args);
+    join(ws, code) {
+        super.join(ws, code);
         this.broadcast({
-            type: UnoPayloadType.GAME_STATUS,
+            type: UnoPayloadType.PLAYER_JOIN,
             data: {
-                players: [...this.clients].map(ws => ws.nickname)
+                id: ws.id,
+                nickname: ws.nickname
             }
         });
+        // send players already inside the room
+        for (const other of this.clients)
+            if (other !== ws)
+                ws.send(JSON.stringify({
+                    type: UnoPayloadType.PLAYER_JOIN,
+                    data: {
+                        id: other.id,
+                        nickname: other.nickname
+                    }
+                }));
+        ws.send(JSON.stringify({
+            type: UnoPayloadType.PLAYER_ID,
+            data: ws.id
+        }));
     }
     draw(player) {
         const card = this.pile.pop();
@@ -112,6 +125,10 @@ class UnoRoom extends Room {
         this.broadcast({
             type: UnoPayloadType.GAME_BEGIN,
             data: this.top
+        });
+        this.broadcast({
+            type: UnoPayloadType.GAME_TURN,
+            data: this.turn
         });
     }
     play(player, card) {

@@ -19,6 +19,7 @@ class Room {
         this.ownerIp = ownerIp;
         this.gameId = gameId;
         this.settings = Object.assign(DefaultConfig, require(`../public/games/${gameId}/settings`), settings);
+        this.clientId = 0;
         this.clients = new Set;
         this.handlers = {};
         ipToRoom.get(ownerIp)?.destroy();
@@ -28,7 +29,7 @@ class Room {
         updateRoomStatus(this);
     }
     // NOTE: maybe would be better as a WebSocket method
-    join(ws, req, code) {
+    join(ws, code) {
         if (this.clients.size === this.settings.maxPlayers)
             return ws.close(1006, 'Room Full');
         if (this.settings.public === State.OFF && this.settings.code !== code)
@@ -38,6 +39,7 @@ class Room {
             ipToRoom.set(ws.ip, this);
         }
         this.clients.add(ws);
+        ws.id = clientId++;
         updateRoomStatus(this);
     }
     leave(ws) {

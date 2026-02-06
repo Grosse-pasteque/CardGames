@@ -2,7 +2,7 @@ const s = new URLSearchParams(location.search);
 const roomId = s.get('id');
 const isHost = s.get('host') === "true";
 
-let playerNicknames = [];
+let playerNicknames = {}, playerId;
 
 (async function() {
     const PayloadType = await jsonFetch('/enums/UnoPayloadType');
@@ -25,18 +25,19 @@ let playerNicknames = [];
             case PayloadType.PLAYER_DREW:
                 // player index
                 break;
+            case PayloadType.PLAYER_LEAVE:
+                break;
+            case PayloadType.PLAYER_JOIN:
+                playerNicknames[data.id] = data.nickname;
+                addPlayer(data.id, data.nickname);
+                break;
+            case PayloadType.PLAYER_ID:
+                playerId = data;
+                break;
 
             // All
             case PayloadType.GAME_TURN: // whose turn is it
                 // player index
-                break;
-            case PayloadType.GAME_STATUS: // on player join / leave
-                // spectator count
-                playerNicknames = data.players;
-                let i = 1, content = '<table><tbody>';
-                for (const nickname of playerNicknames)
-                    content += `<tr><td>${i++}</td><td>${nickname}</td></tr>`;
-                popup.innerHTML = content + '</tbody></table>';
                 break;
             case PayloadType.GAME_STARTED: // when host starts
                 start.hidden = true;
@@ -60,17 +61,6 @@ let playerNicknames = [];
     });
 })();
 
-
-let popupVisible = false;
-window.addEventListener('keyup', e => {
-    if (e.key === 'Escape') {
-        popup.style = popupVisible ? 'display:none' : '';
-        popupVisible = !popupVisible;
-        e.preventDefault();
-    }
-});
-
-
 async function jsonFetch(...args) {
     const rk = await fetch(...args);
     return await rk.json();
@@ -89,22 +79,14 @@ const hiddenHandSlots = {
 };
 const playerElements = [];
 
-function addDeck(cardsCount) {
+function addPlayer(nickname) {
     const playerElement = document.createElement('div');
     playerElement.className = 'hand';
     const nicknameDisplay = document.createElement('span');
-    nicknameDisplay.innerText = "abc";
+    nicknameDisplay.innerText = nickname;
     const handElement = document.createElement('div');
-    if (config.handsDisplayCompact) handElement.innerText = cardsCount;
-    else for (let i = 0; i < cardsCount; i++) {
-        const card = document.createElement('i');
-        card.className = 'card';
-        // card.innerText = '9';
-        // if (value === 9 || value === 6) card.style.textDecoration = 'underline';
-        handElement.appendChild(card);
-    }
-    playerElement.append(nicknameDisplay, handElement)
-    playerElements.push(playerElement);
+    playerElement.append(nicknameDisplay, handElement);
+    playerElements.push(handElement);
 
     const c = playerElements.length;
     let n = 0;
@@ -120,19 +102,19 @@ function addDeck(cardsCount) {
         hiddenHandSlots.right.appendChild(playerElements[i++]);
 }
 /*
-setTimeout(addDeck, 0, 6);
-setTimeout(addDeck, 2000, 7);
-setTimeout(addDeck, 2000, 11);
-setTimeout(addDeck, 4000, 7);
-setTimeout(addDeck, 4000, 9);
-setTimeout(addDeck, 4000, 3);
+setTimeout(addPlayer, 0, 6);
+setTimeout(addPlayer, 2000, 7);
+setTimeout(addPlayer, 2000, 11);
+setTimeout(addPlayer, 4000, 7);
+setTimeout(addPlayer, 4000, 9);
+setTimeout(addPlayer, 4000, 3);
 */
-addDeck(6);
-addDeck(7);
-addDeck(11);
-addDeck(7);
-addDeck(9);
-addDeck(3);
+addPlayer(6);
+addPlayer(7);
+addPlayer(11);
+addPlayer(7);
+addPlayer(9);
+addPlayer(3);
 
 discard.onclick = async () => {
     const cards = Array.from(playerElements[Math.floor(Math.random() * playerElements.length)].lastElementChild.children);
@@ -175,7 +157,7 @@ function moveFlipSwap(el, x, y, newBg, duration = 1000) {
             fill: 'forwards',
             easing: 'ease'
         }
-    ).onfinish = () => el.parentElement.removeChild(el);
+    ).onfinish = () => el.remove();
 
     return anim
 }
