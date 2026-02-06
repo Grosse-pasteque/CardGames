@@ -87,11 +87,14 @@ const hiddenHandSlots = {
     top: document.getElementById('top-hands'),
     right: document.getElementById('right-hands')
 };
-const handElements = [];
+const playerElements = [];
 
 function addDeck(cardsCount) {
+    const playerElement = document.createElement('div');
+    playerElement.className = 'hand';
+    const nicknameDisplay = document.createElement('span');
+    nicknameDisplay.innerText = "abc";
     const handElement = document.createElement('div');
-    handElement.className = 'hand-hidden';
     if (config.handsDisplayCompact) handElement.innerText = cardsCount;
     else for (let i = 0; i < cardsCount; i++) {
         const card = document.createElement('i');
@@ -100,20 +103,21 @@ function addDeck(cardsCount) {
         // if (value === 9 || value === 6) card.style.textDecoration = 'underline';
         handElement.appendChild(card);
     }
-    handElements.push(handElement);
+    playerElement.append(nicknameDisplay, handElement)
+    playerElements.push(playerElement);
 
-    const c = handElements.length;
+    const c = playerElements.length;
     let n = 0;
     while (c - 2 * n >= n) n++;
     n--;
     let i = 0;
     const m = c - 2 * n;
     for (let j = 0; j < n; j++)
-        hiddenHandSlots.left.appendChild(handElements[i++]);
+        hiddenHandSlots.left.appendChild(playerElements[i++]);
     for (let j = 0; j < m; j++)
-        hiddenHandSlots.top.appendChild(handElements[i++]);
+        hiddenHandSlots.top.appendChild(playerElements[i++]);
     for (let j = 0; j < n; j++)
-        hiddenHandSlots.right.appendChild(handElements[i++]);
+        hiddenHandSlots.right.appendChild(playerElements[i++]);
 }
 /*
 setTimeout(addDeck, 0, 6);
@@ -132,9 +136,9 @@ addDeck(3);
 
 const { left: TX, top: TY } = discard.getBoundingClientRect();
 discard.onclick = async () => {
-    const cards = Array.from(handElements[Math.floor(Math.random() * handElements.length)].children);
+    const cards = Array.from(playerElements[Math.floor(Math.random() * playerElements.length)].lastElementChild.children);
     const card = cards[Math.floor(Math.random() * cards.length)];
-    // const card = handElements[4].children.item(0);
+    // const card = playerElements[4].children.item(0);
     moveFlipSwap(card, TX, TY, "url('./trans.png')");
 }
 
@@ -142,8 +146,7 @@ function moveFlipSwap(el, x, y, newBg, duration = 1000) {
     const rect = el.getBoundingClientRect()
     const globalTarget = new DOMPoint(x, y)
     const globalCurrent = new DOMPoint(rect.left, rect.top)
-
-    const style = getComputedStyle(el.parentElement.parentElement);
+    const style = getComputedStyle(el.parentElement.parentElement.parentElement);
     const comp = new DOMMatrix(style.transform);
     const rot = Math.atan2(comp.b, comp.a) * (180 / Math.PI);
     const inv = comp.inverse();

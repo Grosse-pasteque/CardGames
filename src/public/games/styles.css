@@ -31,7 +31,11 @@
     transform: rotate(180deg);
 }
 
-.hand-hidden {
+.hand {
+    color: white;
+    font-size: 20px;
+}
+.hand > div {
     display: flex;
 }
 .card {
