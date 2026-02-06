@@ -134,12 +134,12 @@ addDeck(7);
 addDeck(9);
 addDeck(3);
 
-const { left: TX, top: TY } = discard.getBoundingClientRect();
 discard.onclick = async () => {
     const cards = Array.from(playerElements[Math.floor(Math.random() * playerElements.length)].lastElementChild.children);
     const card = cards[Math.floor(Math.random() * cards.length)];
     // const card = playerElements[4].children.item(0);
-    moveFlipSwap(card, TX, TY, "url('./trans.png')");
+    const { left, top } = discard.getBoundingClientRect(); // in case window is resized
+    moveFlipSwap(card, left, top, "url('./trans.png')");
 }
 
 function moveFlipSwap(el, x, y, newBg, duration = 1000) {
