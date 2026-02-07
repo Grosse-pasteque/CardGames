@@ -1,5 +1,9 @@
 :root {
     --pane-size: 20px;
+
+    --card-scale: 3;
+    --card-width: calc(156px / var(--card-scale));
+    --card-height: calc(242px / var(--card-scale));
 }
 
 .pane {
@@ -44,27 +48,27 @@
     display: flex;
 }
 .card {
-    --scale: 3;
-    --width: calc(156px / var(--scale));
-    --height: calc(242px / var(--scale));
     display: block;
-    width: var(--width);
-    height: var(--height);
+    width: var(--card-width);
+    height: var(--card-height);
     border-radius: 4px;
-    margin-right: calc(-0.5 * var(--width));
+    margin-right: calc(-0.5 * var(--card-width));
 
     background-size: cover;
     background-image: url('./back.png');
 
     border: 1px solid black;
-    font-size: calc(var(--height) / 2);
+    font-size: calc(var(--card-height) / 2);
     display: flex;
     align-items: center;
     justify-content: center;
     background: white;
+
+    transition: width 0.4s ease, height 0.4s ease;
 }
 
 #table {
+    --gap: 10px;
     display: flex;
     position: absolute;
     top: 50%;
@@ -74,7 +78,14 @@
 }
 
 #table .card {
-    margin: 10px;
+    margin: var(--gap);
+    position: absolute;
+}
+
+#pile, #discard {
+    display: block;
+    width: calc(var(--card-width) + 2 * var(--gap));
+    height: calc(var(--card-height) + 2 * var(--gap));
 }
 
 body {
