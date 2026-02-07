@@ -23,6 +23,7 @@ let players = {}, playerId;
                 // card id
                 break;
             case PayloadType.PLAYER_DREW:
+                // TODO: animate
                 addCard(data);
                 break;
             case PayloadType.PLAYER_LEAVE:
@@ -122,16 +123,57 @@ function orderPlayers() {
 }
 
 function addCard(id) {
+    // thanks ChatGPT, I was about to lose my mind on this
+    // FIXME: left and right hands are offseted
     if (id === playerId) return;
-    const { handElement } = players[id];
-    if (config.handsDisplayCompact) {
-        handElement.innerText++;
-    } else {
-        const card = document.createElement('i');
-        card.className = 'card';
-        handElement.appendChild(card);
-    }
+
+    const { handElement, playerElement } = players[id];
+
+    const target = document.createElement('i');
+    target.className = 'card';
+    handElement.appendChild(target);
+
+    const pileCard = pile.querySelector('.card');
+    const from = pileCard.getBoundingClientRect();
+    const to = target.getBoundingClientRect();
+
+    target.remove();
+
+    const ghost = pileCard.cloneNode(true);
+    document.body.appendChild(ghost);
+
+    ghost.style.position = 'fixed';
+    ghost.style.left = from.left + 'px';
+    ghost.style.top = from.top + 'px';
+    ghost.style.margin = '0';
+    ghost.style.zIndex = '9999';
+
+    const dx = to.left - from.left;
+    const dy = to.top - from.top;
+    const rot = playerElement.parentElement.style.getPropertyValue('--rotation');
+
+    ghost.style.transformOrigin = 'center center';
+
+    ghost.animate(
+        [
+            {
+                transform: 'translate(0px, 0px) scale(1.5) rotate(0deg)'
+            },
+            {
+                transform: `translate(${dx}px, ${dy}px) scale(1) rotate(${rot})`
+            }
+        ],
+        {
+            duration: 500,
+            easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+            fill: 'forwards'
+        }
+    ).onfinish = () => {
+        ghost.remove();
+        handElement.appendChild(target);
+    };
 }
+
 
 discard.onclick = async () => {
     const cards = document.querySelectorAll('.card');

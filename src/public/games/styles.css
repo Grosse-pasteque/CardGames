@@ -13,11 +13,12 @@
     justify-content: space-evenly;
     height: var(--pane-size);
     flex-direction: row-reverse;
+    rotate: var(--rotation);
 }
 
 #left-hands {
     width: 100vh;
-    transform: translateX(var(--pane-size)) rotate(90deg);
+    transform: translateY(-100%);
     transform-origin: top left;
 }
 
@@ -25,14 +26,13 @@
     top: 100vh;
     right: var(--pane-size);
     width: 100vh;
-    transform: rotate(-90deg) translateX(100%);
+    transform: translateX(100%);
     transform-origin: top right;
 }
 
 #top-hands {
     top: 0;
     width: 100vw;
-    transform: rotate(180deg);
 }
 
 #bottom-hands {
@@ -48,7 +48,6 @@
     display: flex;
 }
 .card {
-    display: block;
     width: var(--card-width);
     height: var(--card-height);
     border-radius: 4px;
@@ -64,7 +63,9 @@
     justify-content: center;
     background: white;
 
-    transition: width 0.4s ease, height 0.4s ease;
+    transition: width 0.4s ease,
+                height 0.4s ease,
+                transform 3s ease;
 }
 
 #table {
