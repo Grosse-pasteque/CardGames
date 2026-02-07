@@ -2,7 +2,7 @@ const s = new URLSearchParams(location.search);
 const roomId = s.get('id');
 const isHost = s.get('host') === "true";
 
-let players = {}, playerId, isRunning = false;
+let players = {}, playerId, isRunning = false, playerTurn;
 
 (async function() {
     const PayloadType = await jsonFetch('/enums/UnoPayloadType');
@@ -40,7 +40,8 @@ let players = {}, playerId, isRunning = false;
 
             // All
             case PayloadType.GAME_TURN: // whose turn is it
-                // player id
+                players[playerTurn]?.nicknameDisplay.classList.remove('playing');
+                players[playerTurn = data]?.nicknameDisplay.classList.add('playing');
                 break;
             case PayloadType.GAME_STARTED: // when host starts
                 isRunning = true;
@@ -92,6 +93,7 @@ function addPlayer(id, nickname) {
     players[id] = {
         id,
         nickname,
+        nicknameDisplay,
         playerElement,
         handElement
     };

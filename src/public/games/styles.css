@@ -44,6 +44,14 @@
     color: white;
     font-size: 20px;
 }
+.hand > span {
+    padding-inline: 20px;
+}
+.hand > .playing {
+    font-weight: bold;
+    border-inline: 3px solid red;
+    border-radius: 5px;
+}
 .hand > div {
     display: flex;
 }
