@@ -65,9 +65,11 @@ class Room {
             s += `&code=${encodeURIComponent(this.settings.code)}`;
         return s;
     }
-    broadcast(data) {
+    broadcast(data, excepted) {
         data = JSON.stringify(data);
-        for (const ws of this.clients) ws.send(data);
+        for (const ws of this.clients)
+            if (excepted !== ws)
+                ws.send(data);
     }
 }
 

@@ -65,7 +65,7 @@ class UnoRoom extends Room {
         this.broadcast({
             type: PayloadType.PLAYER_DREW,
             data: player.id
-        });
+        }, player);
     }
     async start(host) {
         if (host.ip !== this.ownerIp || this.isRunning || this.clients.size < 2) return;
