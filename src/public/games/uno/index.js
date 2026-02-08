@@ -2,10 +2,12 @@ const s = new URLSearchParams(location.search);
 const roomId = s.get('id');
 const isHost = s.get('host') === "true";
 
-let players = {}, playerId, hasStarted = false, isRunning = false, playerTurn;
+let players = {}, playerId, hasStarted = false, isRunning = false, playerTurn, DECK, CardType;
 
 (async function() {
     const PayloadType = await jsonFetch('/enums/UnoPayloadType');
+    CardType = await jsonFetch('/enums/UnoCardType');
+    DECK = await jsonFetch('/data/uno');
 
     const ws = new WebSocket(`ws://localhost:8888?id=${roomId}&nickname=${encodeURIComponent(localStorage.nickname || '')}`);
     ws.onmessage = message => {
@@ -48,7 +50,8 @@ let players = {}, playerId, hasStarted = false, isRunning = false, playerTurn;
                 break;
             case PayloadType.GAME_BEGIN: // when game begins
                 isRunning = true;
-                // top card
+                setCardPosition(discardTop, data);
+                discard.appendChild(discardTop);
                 break;
             case PayloadType.GAME_SUMMARY: // end game
                 // player id
@@ -82,6 +85,23 @@ const handSlots = {
     right: document.getElementById('right-hands'),
     bottom: document.getElementById('bottom-hands')
 };
+
+const card = document.createElement('i');
+card.className = 'card';
+
+const discardTop = card.cloneNode(true);
+
+function setCardPosition(element, id) {
+    const { type, value, color } = DECK[id];
+    element.style = `--x: ${
+        type === CardType.NUMBER ? value :
+        type === CardType.JOKER ? 0 :
+        type === CardType.PLUS_FOUR ? 1 :
+        9 + type
+    }; --y: ${
+        color
+    }`;
+}
 
 function addPlayer(id, nickname) {
     const playerElement = document.createElement('div');
@@ -134,8 +154,7 @@ function addCard(id) {
 
     const { handElement, playerElement } = players[id];
 
-    const target = document.createElement('i');
-    target.className = 'card';
+    const target = card.cloneNode(true);
     handElement.appendChild(target);
 
     const pileCard = pile.querySelector('.card');

@@ -55,8 +55,8 @@
     display: flex;
 }
 .card {
-    --x: 0;
-    --y: 0;
+    --x: 2;
+    --y: 4;
     width: var(--card-real-width);
     height: var(--card-real-height);
     border-radius: 4px;
@@ -94,7 +94,6 @@
 }
 
 #pile, #discard {
-    display: block;
     width: calc(var(--card-real-width) + 2 * var(--gap));
     height: calc(var(--card-real-height) + 2 * var(--gap));
 }
