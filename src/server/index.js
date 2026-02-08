@@ -13,6 +13,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const enumsDir = path.join(__dirname, 'enums');
+const dataDir = path.join(__dirname, 'data');
 
 app.set('trust proxy', true);
 app.use((req, res, next) => {
@@ -23,13 +24,12 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..', 'public'), { dotfiles: 'ignore' }));
-app.get('/enums/:name', (req, res) => {
-    const fileName = req.params.name + '.json';
-    const filePath = path.join(enumsDir, fileName);
+app.get(['/enums/:name', '/data/:name'], (req, res) => {
+    const filePath = path.join(__dirname, req.url + '.json');
 
     fs.access(filePath, fs.constants.R_OK, (err) => {
         if (err) {
-            res.status(404).send({ error: 'Not found' });
+            res.sendStatus(404);
             return;
         }
         res.setHeader('Content-Type', 'application/json');

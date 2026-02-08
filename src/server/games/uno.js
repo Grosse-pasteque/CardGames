@@ -7,21 +7,7 @@ function sleep(s) {
     return new Promise(r => setTimeout(r, s * 1000));
 }
 
-function number(value, color) {
-    return { type: CardType.NUMBER, value, color };
-}
-
-const DECK = [];
-for (const color of [CardColor.RED, CardColor.YELLOW, CardColor.GREEN, CardColor.BLUE]) {
-    DECK.push(number(0, color));
-    for (let value = 1; value <= 9; value++)
-        DECK.push(number(value, color), number(value, color));
-    for (const type of [CardType.PLUS_TWO, CardType.SKIPS, CardType.CHANGE_DIRECTION])
-        DECK.push({ type, value: 20, color }, { type, value: 20, color });
-}
-for (let i = 0; i < 4; i++)
-    DECK.push({ type: CardType.JOKER, value: 50, color: CardColor.BLACK }, { type: CardType.PLUS_FOUR, value: 50, color: CardColor.BLACK });
-
+const DECK = require('../data/uno');
 const CARDS_COUNT = DECK.length
 const DECK_IDS = Array(CARDS_COUNT).fill().map((_, i) => i);
 
