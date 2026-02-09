@@ -81,7 +81,8 @@
 
     transition: width 0.4s ease,
                 height 0.4s ease,
-                transform 3s ease;
+                transform 3s ease,
+                margin-right 0.3s ease;
 }
 
 #table {
