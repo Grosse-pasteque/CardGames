@@ -2,14 +2,14 @@ const s = new URLSearchParams(location.search);
 const roomId = s.get('id');
 const isHost = s.get('host') === "true";
 
-let players = {}, playerId, hasStarted = false, isRunning = false, playerTurn, DECK, CardType;
+let players = {}, playerId, hasStarted = false, isRunning = false, playerTurn, DECK, CardType, ws, PayloadType, discarded;
 
 (async function() {
-    const PayloadType = await jsonFetch('/enums/UnoPayloadType');
+    PayloadType = await jsonFetch('/enums/UnoPayloadType');
     CardType = await jsonFetch('/enums/UnoCardType');
     DECK = await jsonFetch('/data/uno');
 
-    const ws = new WebSocket(`ws://localhost:8888?id=${roomId}&nickname=${encodeURIComponent(localStorage.nickname || '')}`);
+    ws = new WebSocket(`ws://localhost:8888?id=${roomId}&nickname=${encodeURIComponent(localStorage.nickname || '')}`);
     ws.onmessage = message => {
         const { type, data } = JSON.parse(message.data);
         switch (type) {
@@ -21,8 +21,7 @@ let players = {}, playerId, hasStarted = false, isRunning = false, playerTurn, D
             // Broadcast
             // NOTE: would be better to send those offer HTTP in it fails
             case PayloadType.PLAYER_DISCARDED:
-                // player id
-                // card id
+                removeCard(data.id, data.cardId);
                 break;
             case PayloadType.PLAYER_DREW:
                 addCard(data);
@@ -93,6 +92,7 @@ const discardTop = card.cloneNode(true);
 
 function setCardPosition(element, id) {
     const { type, value, color } = DECK[id];
+    element.dataset.id = id;
     element.style.setProperty('--x',
         type === CardType.NUMBER ? value :
         type === CardType.JOKER ? 0 :
@@ -116,8 +116,15 @@ function addPlayer(id, nickname) {
         playerElement,
         handElement
     };
-    if (id === playerId)
+    if (id === playerId) {
         handSlots.bottom.appendChild(playerElement);
+        handElement.addEventListener('click', event => {
+            discarded = event.target;
+            const id = parseInt(discarded?.dataset.id);
+            if (!Number.isInteger(id) || id < 0) return;
+            ws.send(PayloadType.DISCARD_CARD, id);
+        });
+    }
     orderPlayers();
 }
 
@@ -219,7 +226,7 @@ function addCard(id, cardId) {
 function removeCard(id, cardId) {
     const { handElement, playerElement } = players[id];
 
-    const target = handElement.children.item(Math.floor(Math.random() * handElement.childElementCount));
+    const target = playerId === id ? discarded : handElement.children.item(Math.floor(Math.random() * handElement.childElementCount));
 
     const from = discardTop.getBoundingClientRect();
     const to = target.getBoundingClientRect();
@@ -229,7 +236,17 @@ function removeCard(id, cardId) {
     const rot = playerElement.parentElement.style.getPropertyValue('--rotation');
 
     target.style.transformOrigin = 'center center';
-    target.animate([{
+    // FIXME: scale(1.5) fucks up everything change to width/height
+    if (playerId === id) target.animate([{
+        transform: `translate(${-dx}px, calc(${-dy}px)`
+    }], {
+        duration: 400,
+        fill: 'forwards'
+    }).onfinish = () => {
+        target.remove();
+        setCardPosition(discardTop, cardId);
+    };
+    else target.animate([{
         transform: `translate(${dx * 0.7}px, ${dy * 0.7}px) scale(${1.5 * 0.9}) rotate(-${rot}) rotateY(90deg)`
     }], {
         duration: 300,

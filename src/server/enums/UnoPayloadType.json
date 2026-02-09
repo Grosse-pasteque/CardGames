@@ -12,5 +12,7 @@
     "GAME_BEGIN": 8,
     "GAME_SUMMARY": 9,
 
-    "HOST_START": 10
+    "HOST_START": 10,
+
+    "DISCARD_CARD": 11
 }

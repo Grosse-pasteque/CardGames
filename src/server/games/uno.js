@@ -12,6 +12,22 @@ const CARDS_COUNT = DECK.length
 const DECK_IDS = Array(CARDS_COUNT).fill().map((_, i) => i);
 
 
+Array.prototype.remove = function(elem) {
+    const i = this.indexOf(elem);
+    const exists = -1 !== i;
+    if (exists) this.splice(i, 1);
+    return exists;
+};
+
+function has(player, type) {
+    for (const cardId of player.hand) {
+        const card = DECK[cardId];
+        if (card.type === type)
+            return true;
+    }
+    return false;
+}
+
 class UnoRoom extends Room {
     constructor(...args) {
         super(...args, 'uno');
@@ -21,9 +37,11 @@ class UnoRoom extends Room {
         this.turn = 0;
         this.direction = 1; // -1
         this.top = null;
+        this.plusCount = 0;
         this.isRunning = false;
         this.handlers = {
-            [PayloadType.HOST_START]: this.start.bind(this)
+            [PayloadType.HOST_START]: this.start.bind(this),
+            [PayloadType.DISCARD_CARD]: this.play.bind(this)
         };
     }
     onLeave(ws) {
@@ -80,8 +98,11 @@ class UnoRoom extends Room {
         for (let i = 0; i < CARDS_COUNT; i++)
             this.pile.push(this.discard.splice(Math.floor(Math.random() * n--), 1)[0]);
         // distribute
-        for (const player of this.players)
+        let i = 0;
+        for (const player of this.players) {
             player.hand = [];
+            player.index = i++;
+        }
         for (let i = 0; i < 7; i++)
             for (const player of this.players) {
                 this.draw(player);
@@ -99,23 +120,26 @@ class UnoRoom extends Room {
             data: this.turn
         });
     }
-    play(player, card) {
+    play(player, cardId) {
         // redefine top in function of what this player plays
+        if (!player.hand.includes(cardId)) return;
         const top = DECK[this.top];
-        card = DECK[card];
+        const card = DECK[cardId];
         if (
             top.type === card.type ||
             top.value === card.value ||
             top.color === card.color ||
             card.type === CardType.JOKER || card.type === CardType.PLUS_FOUR
         ) {
-            const nextPlayer = this.players[this.turn + 1];
+            /*const nextPlayer = this.players[this.turn + 1];
             switch (card.type) {
                 case CardType.PLUS_TWO:
-                    if (!nextPlayer.hand.some(card => card.type === CardType.PLUS_TWO || card.type === CardType.JOKER)) {
+                    if (has(nextPlayer, CardType.PLUS_TWO) || has(nextPlayer, CardType.JOKER)) {
+                        this.plusCount += 2;
+                    } else {
                         nextPlayer.hand.push(this.pile.pop(), this.pile.pop());
-                        this.turn += this.direction;
                     }
+                    this.turn += this.direction;
                     break;
                 case CardType.PLUS_FOUR:
                     if (!nextPlayer.hand.some(card => card.type === CardType.PLUS_FOUR)) {
@@ -134,8 +158,20 @@ class UnoRoom extends Room {
                     }
                     // Boomer: this.direction = 2 - this.direction;
                     break;
-            }
+            }*/
+            player.hand.remove(cardId);
+            this.broadcast({
+                type: PayloadType.PLAYER_DISCARDED,
+                data: {
+                    id: player.id,
+                    cardId
+                }
+            });
             this.turn += this.direction;
+            this.broadcast({
+                type: PayloadType.GAME_TURN,
+                data: this.turn
+            });
         }
         // remove card from player's deck
         // +1 to turn
