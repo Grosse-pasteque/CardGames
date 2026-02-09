@@ -18,5 +18,7 @@
     "startCardChangeDirectionAllowed": "off",
     "startCardPlusFourAllowed": "off",
     "startCardJokerAllowed": "off",
-    "invactiveTimeout": 10
+    "invactiveTimeout": 10,
+    "endWithBlackCardAllowed": "off",
+    "drawingIntervalCooldown": 0.7
 }

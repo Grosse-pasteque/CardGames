@@ -44,7 +44,7 @@ class UnoRoom extends Room {
         this.isRunning = false;
         this.handlers = {
             [PayloadType.HOST_START]: this.start.bind(this),
-            [PayloadType.DISCARD_CARD]: this.play.bind(this)
+            [PayloadType.DISCARD_CARD]: this.play.bind(this),
             [PayloadType.CHOOSE_COLOR]: this.choseColor.bind(this)
         };
     }
@@ -110,10 +110,10 @@ class UnoRoom extends Room {
         for (let i = 0; i < 7; i++)
             for (const player of this.players) {
                 this.draw(player);
-                await sleep(0.7); // TODO: make that configurable
+                await sleep(this.settings.drawingIntervalCooldown);
             }
         // draw first card
-        await sleep(0.7);
+        await sleep(this.settings.drawingIntervalCooldown);
         this.top = this.pile.pop();
         this.broadcast({
             type: PayloadType.GAME_BEGIN,
@@ -182,7 +182,7 @@ class UnoRoom extends Room {
                 ) break;
                 for (; this.plusCount > 0; this.plusCount--) {
                     this.draw(nextPlayer);
-                    await sleep(0.7);
+                    await sleep(this.settings.drawingIntervalCooldown);
                 }
                 this.nextTurn();
                 break;
@@ -194,7 +194,7 @@ class UnoRoom extends Room {
                 ) break;
                 for (; this.plusCount > 0; this.plusCount--) {
                     this.draw(nextPlayer);
-                    await sleep(0.7);
+                    await sleep(this.settings.drawingIntervalCooldown);
                 }
                 this.nextTurn();
                 break;
