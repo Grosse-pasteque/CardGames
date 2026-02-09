@@ -90,7 +90,7 @@ class UnoRoom extends Room {
         }, player);
     }
     async start(host) {
-        if (host.ip !== this.ownerIp || this.isRunning || this.clients.size < 2) return;
+        if (host.id !== 0 || this.isRunning || this.clients.size < 2) return;
         this.isRunning = true;
         this.broadcast({
             type: PayloadType.GAME_STARTED

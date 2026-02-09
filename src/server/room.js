@@ -10,21 +10,19 @@ const DefaultConfig = {
 const { broadcastRealtime } = require('./realtime');
 
 let maxRoomId = 0;
-const ipToRoom = new Map, idToRoom = new Map;
+const idToRoom = new Map;
 const rooms = new Set;
 
 class Room {
-    constructor(ownerIp, settings, gameId) {
+    constructor(settings, gameId) {
         this.id = maxRoomId++;
-        this.ownerIp = ownerIp;
         this.gameId = gameId;
+        // FIXME: settings don't have verified values
         this.settings = Object.assign(DefaultConfig, require(`../public/games/${gameId}/settings`), settings);
         this.clientId = 0;
         this.clients = new Set;
         this.handlers = {};
-        ipToRoom.get(ownerIp)?.destroy();
         rooms.add(this);
-        ipToRoom.set(ownerIp, this);
         idToRoom.set(this.id, this);
         updateRoomStatus(this);
     }
@@ -34,10 +32,6 @@ class Room {
             return ws.close(1009, 'Room Full');
         if (this.settings.public === State.OFF && this.settings.code !== code)
             return ws.close(1009, 'Wrong code');
-        if (ws.ip !== this.ownerIp) {
-            ipToRoom.get(ws.ip)?.leave(ws);
-            ipToRoom.set(ws.ip, this);
-        }
         ws.id = this.clientId++;
         this.clients.add(ws);
         this.onJoin?.(ws);
@@ -45,8 +39,7 @@ class Room {
     }
     leave(ws) {
         if (!this.clients.delete(ws)) return;
-        if (ws.ip === this.ownerIp) return this.destroy();
-        ipToRoom.delete(ws.ip);
+        if (ws.id === 0) return this.destroy();
         this.onLeave?.(ws);
         updateRoomStatus(this);
     }
@@ -54,7 +47,6 @@ class Room {
         for (const ws of this.clients)
             ws.close(1009, 'Room Destroyed');
         rooms.delete(this);
-        ipToRoom.delete(this.ownerIp);
         idToRoom.delete(this.id);
         this.onDestroy?.();
         deleteRoomStatus(this);
@@ -96,4 +88,4 @@ function getRoomStatus(room) {
     }
 }
 
-module.exports = { Room, rooms, ipToRoom, idToRoom, State, DefaultConfig, getRoomStatus, updateRoomStatus, deleteRoomStatus };
+module.exports = { Room, rooms, idToRoom, State, DefaultConfig, getRoomStatus, updateRoomStatus, deleteRoomStatus };

@@ -5,7 +5,7 @@ const express = require('express');
 const WebSocket = require('ws');
 
 const Games = require('./games');
-const { Room, rooms, idToRoom, ipToRoom, getRoomStatus } = require('./room');
+const { Room, rooms, idToRoom, getRoomStatus } = require('./room');
 const { broadcastRealtime, realtimeClients } = require('./realtime');
 
 const app = express();
@@ -40,7 +40,7 @@ app.get(['/enums/:name', '/data/:name'], (req, res) => {
 app.get('/games', (req, res) => res.status(200).send(games));
 app.get('/rooms', (req, res) => res.status(200).send([...rooms].map(getRoomStatus)));
 app.post('/make/:id/', (req, res) => {
-    const room = new Games[req.params.id](req.ip, req.body);
+    const room = new Games[req.params.id](req.body);
     res.redirect(303, room.url + '&host=true'); // prevents form resubmission
 });
 
