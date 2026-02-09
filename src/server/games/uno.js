@@ -1,4 +1,5 @@
 const { Room } = require('../room');
+const State = require('../enums/State');
 const PayloadType = require('../enums/UnoPayloadType');
 const CardType = require('../enums/UnoCardType');
 const CardColor = require('../enums/UnoCardColor');
@@ -120,61 +121,84 @@ class UnoRoom extends Room {
             data: this.turn
         });
     }
-    play(player, cardId) {
-        // redefine top in function of what this player plays
+    async play(player, cardId) {
         if (!player.hand.includes(cardId)) return;
+
         const top = DECK[this.top];
         const card = DECK[cardId];
-        if (
-            top.type === card.type ||
-            top.value === card.value ||
+        if (!(this.turn === player.index && (
             top.color === card.color ||
-            card.type === CardType.JOKER || card.type === CardType.PLUS_FOUR
-        ) {
-            /*const nextPlayer = this.players[this.turn + 1];
-            switch (card.type) {
-                case CardType.PLUS_TWO:
-                    if (has(nextPlayer, CardType.PLUS_TWO) || has(nextPlayer, CardType.JOKER)) {
-                        this.plusCount += 2;
-                    } else {
-                        nextPlayer.hand.push(this.pile.pop(), this.pile.pop());
-                    }
-                    this.turn += this.direction;
-                    break;
-                case CardType.PLUS_FOUR:
-                    if (!nextPlayer.hand.some(card => card.type === CardType.PLUS_FOUR)) {
-                        nextPlayer.hand.push(this.pile.pop(), this.pile.pop(), this.pile.pop(), this.pile.pop());
-                        this.turn += this.direction;
-                    }
-                    break;
-                case CardType.SKIPS:
-                    this.turn += this.direction;
-                    break;
-                case CardType.CHANGE_DIRECTION:
-                    if (this.direction > 0) {
-                        this.direction = -1   
-                    } else {
-                        this.direction = 1
-                    }
-                    // Boomer: this.direction = 2 - this.direction;
-                    break;
-            }*/
-            player.hand.remove(cardId);
-            this.broadcast({
-                type: PayloadType.PLAYER_DISCARDED,
-                data: {
-                    id: player.id,
-                    cardId
-                }
-            });
-            this.turn += this.direction;
-            this.broadcast({
-                type: PayloadType.GAME_TURN,
-                data: this.turn
-            });
+            (card.type === CardType.NUMBER ? top.value === card.value : top.type === card.type) ||
+            card.color === CardColor.BLACK
+        ) || this.settings.interceptions === State.ON && (
+            top.color === card.color &&
+            top.type === card.type &&
+            top.color !== CardColor.BLACK
+        ))) return;
+
+        player.hand.remove(cardId);
+        this.broadcast({
+            type: PayloadType.PLAYER_DISCARDED,
+            data: {
+                id: player.id,
+                cardId
+            }
+        });
+
+        if (card.type === CardType.CHANGE_DIRECTION) {
+            if (this.direction > 0) {
+                this.direction = -1   
+            } else {
+                this.direction = 1
+            }
+            // Boomer: this.direction = 2 - this.direction;
         }
-        // remove card from player's deck
-        // +1 to turn
+
+        this.top = cardId;
+        this.nextTurn();
+
+        const nextPlayer = this.players[this.turn];
+
+        switch (card.type) {
+            case CardType.PLUS_TWO:
+                this.plusCount += 2;
+                if (
+                    this.settings.stackPlusTwo === State.ON && has(nextPlayer, CardType.PLUS_TWO) ||
+                    this.settings.jokerCancelsPlusTwo === State.ON && has(nextPlayer, CardType.JOKER) ||
+                    this.settings.stackPlusFourOverPlusTwo === State.ON && has(nextPlayer, CardType.PLUS_FOUR)
+                ) break;
+                for (; this.plusCount > 0; this.plusCount--) {
+                    this.draw(nextPlayer);
+                    await sleep(0.7);
+                }
+                this.nextTurn();
+                break;
+            case CardType.PLUS_FOUR:
+                this.plusCount += 4;
+                if (
+                    this.settings.stackPlusFour === State.ON && has(nextPlayer, CardType.PLUS_FOUR) ||
+                    this.settings.stackPlusTwoOverPlusFour === State.ON && has(nextPlayer, CardType.PLUS_TWO)
+                ) break;
+                for (; this.plusCount > 0; this.plusCount--) {
+                    this.draw(nextPlayer);
+                    await sleep(0.7);
+                }
+                this.nextTurn();
+                break;
+            case CardType.SKIPS:
+                this.nextTurn();
+                break;
+        }
+        this.broadcast({
+            type: PayloadType.GAME_TURN,
+            data: this.turn
+        });
+    }
+    nextTurn() {
+        this.turn += this.direction;
+        // puts turn back into positives
+        this.turn += this.players.length;
+        this.turn %= this.players.length;
     }
 }
 

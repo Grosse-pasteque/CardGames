@@ -7,7 +7,16 @@
     "twins": "alike",
     "counterColor": "off",
     "stackPlusFour": "off",
+    "stackPlusTwo": "on",
+    "stackPlusFourOverPlusTwo": "off",
+    "stackPlusTwoOverPlusFour": "off",
     "jokerCancelsPlusTwo": "on",
     "counterUnoPenality": 2,
-    "startCards": 7
+    "startCards": 7,
+    "startCardPlusTwoAllowed": "off",
+    "startCardSkipTurnAllowed": "off",
+    "startCardChangeDirectionAllowed": "off",
+    "startCardPlusFourAllowed": "off",
+    "startCardJokerAllowed": "off",
+    "invactiveTimeout": 10
 }
