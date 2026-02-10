@@ -31,6 +31,11 @@
             // NOTE: would be better to send those offer HTTP in it fails
             case PayloadType.PLAYER_DISCARDED:
                 removeCard(data.id, data.cardId);
+                if (data.id === playerId && DECK[data.cardId].color === CardColor.BLACK) {
+                    popup.innerHTML = '';
+                    popup.appendChild(document.getElementById('color-chooser'));
+                    popup.style.opacity = 1;
+                }
                 break;
             case PayloadType.PLAYER_DREW:
                 addCard(data);
@@ -91,7 +96,7 @@
 
     const config = {
         handsDisplayCompact: false,
-    }
+    };
 
     const handSlots = {
         left: document.getElementById('left-hands'),

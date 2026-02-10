@@ -150,3 +150,11 @@ td {
     border: 1px solid red;
     font-size: 30px;
 }
+
+#color-chooser {
+    display: none;
+}
+
+#popup #color-chooser {
+    display: block;
+}
