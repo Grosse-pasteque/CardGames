@@ -88,7 +88,7 @@ class UnoRoom extends Room {
                 } else {
                     this.direction = 1
                 }
-                // Boomer: this.direction = 2 - this.direction;
+                // Boomer: this.direction = -this.direction;
             }
         }
     }
@@ -178,7 +178,7 @@ class UnoRoom extends Room {
         });
         this.broadcast({
             type: PayloadType.GAME_TURN,
-            data: this.turn
+            data: this.players[this.turn].id
         });
         this.cardsHandlers[top.type]?.();
     }
@@ -227,7 +227,7 @@ class UnoRoom extends Room {
 
         this.broadcast({
             type: PayloadType.GAME_TURN,
-            data: this.turn
+            data: this.players[this.turn].id
         });
     }
     choseColor(player, color) {
