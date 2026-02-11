@@ -205,6 +205,7 @@ class UnoRoom extends Room {
             top.color !== CardColor.BLACK
         ))) return;
 
+        this.turn = player.index; // for interceptions
         player.hand.remove(cardId);
         this.broadcast({
             type: PayloadType.PLAYER_DISCARDED,
