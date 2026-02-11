@@ -41,13 +41,17 @@ class UnoRoom extends Room {
         this.plusCount = 0;
         this.waitingColorFrom = null;
         this.chosenColor = null;
+        this.drewCard = false;
         this.isRunning = false;
         this.handlers = {
             [PayloadType.HOST_START]: this.start.bind(this),
             [PayloadType.DISCARD_CARD]: this.play.bind(this),
-            [PayloadType.CHOOSE_COLOR]: this.choseColor.bind(this)
+            [PayloadType.CHOOSE_COLOR]: this.choseColor.bind(this),
+            [PayloadType.DRAW_CARD]: this.drawCard.bind(this),
+            [PayloadType.SKIP]: this.skip.bind(this)
         };
         this.cardsHandlers = {
+            // TODO: make it possible to skip when you have +4/+2/JOKER and top is +4/+2
             [CardType.PLUS_TWO]: async () => {
                 const player = this.players[this.turn];
                 this.plusCount += 2;
@@ -226,6 +230,8 @@ class UnoRoom extends Room {
             type: PayloadType.GAME_TURN,
             data: this.players[this.turn].id
         });
+
+        this.drewCard = false;
     }
     choseColor(player, color) {
         if (this.waitingColorFrom !== player || !(
@@ -246,6 +252,28 @@ class UnoRoom extends Room {
         // puts turn back into positives
         this.turn += this.players.length;
         this.turn %= this.players.length;
+    }
+    drawCard(player) {
+        if (
+            this.drewCard ||
+            this.waitingColorFrom ||
+            this.turn !== player.index
+        ) return;
+        this.drewCard = true;
+        this.draw(player);
+    }
+    skip(player) {
+        if (
+            !this.drewCard ||
+            this.waitingColorFrom ||
+            this.turn !== player.index
+        ) return;
+        this.drewCard = false;
+        this.nextTurn();
+        this.broadcast({
+            type: PayloadType.GAME_TURN,
+            data: this.players[this.turn].id
+        });
     }
 }
 

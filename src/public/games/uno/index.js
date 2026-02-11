@@ -13,6 +13,7 @@
     let direction = 1;
 
     let discarded;
+    let drewCard = false;
 
     const colorChooser = document.getElementById('color-chooser');
     const turnSkip = document.getElementById('turn-skip');
@@ -34,6 +35,10 @@
             // Self
             case PayloadType.RECEIVE_CARD: // deck and draw
                 addCard(playerId, data);
+                if (drewCard) {
+                    drewCard = false;
+                    skip.style.opacity = 1;
+                }
                 break;
             case PayloadType.CHOSEN_COLOR:
                 setCurrentColor(data);
@@ -121,6 +126,18 @@
         }
     });
 
+    pile.firstElementChild.addEventListener('click', () => {
+        if (playerTurn !== playerId) return;
+        drewCard = true;
+        ws.send(PayloadType.DRAW_CARD);
+    });
+
+    skip.addEventListener('click', () => {
+        if (playerTurn !== playerId || skip.style.opacity !== '1') return;
+        skip.style.opacity = '';
+        ws.send(PayloadType.SKIP);
+    });
+
     function setCurrentColor(color) {
         currentColor.style.backgroundImage = 'url(assets/' + CardColorToName[color] + '.png)';
     }
@@ -189,6 +206,7 @@
         if (id === playerId) {
             handSlots.bottom.appendChild(playerElement);
             handElement.addEventListener('click', event => {
+                skip.style.opacity = '';
                 discarded = event.target;
                 const id = parseInt(discarded?.dataset.id);
                 if (!Number.isInteger(id) || id < 0) return;
