@@ -164,6 +164,7 @@ class UnoRoom extends Room {
             this.top = this.pile.pop();
             top = DECK[this.top];
             if (
+                top.color === CardColor.BLACK ||
                 this.settings.startCardPlusTwoAllowed === State.OFF && top.type === CardType.PLUS_TWO ||
                 this.settings.startCardSkipTurnAllowed === State.OFF && top.type === CardType.SKIPS ||
                 this.settings.startCardChangeDirectionAllowed === State.OFF && top.type === CardType.CHANGE_DIRECTION
