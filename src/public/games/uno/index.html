@@ -15,6 +15,48 @@
             --card-background-height: calc(var(--card-background-rows) * var(--card-height));
             --card-background-image: url('./uno/assets/cards.png');
         }
+
+        #color-chooser {
+            display: none;
+        }
+
+        #popup #color-chooser {
+            display: block;
+        }
+
+        #color-chooser i {
+            display: block;
+            height: 100px;
+            width: 100px;
+        }
+
+        #turn-skip {
+            display: none;
+            width: 70%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #infos {
+            display: flex;
+            justify-content: space-evenly;
+        }
+
+        #infos > i {
+            height: 30px;
+            width: 30px;
+            background-size: 30px;
+        }
+
+        #skip {
+            opacity: .6;
+        }
+
+        #direction {
+            transition: transform 0.5s ease;
+        }
     </style>
     <link rel="stylesheet" type="text/css" href="../styles.css">
 </head>
