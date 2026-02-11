@@ -47,6 +47,50 @@ class UnoRoom extends Room {
             [PayloadType.DISCARD_CARD]: this.play.bind(this),
             [PayloadType.CHOOSE_COLOR]: this.choseColor.bind(this)
         };
+        this.cardsHandlers = {
+            [CardType.PLUS_TWO]: () => {
+                const player = this.players[this.turn];
+                this.plusCount += 2;
+                if (
+                    this.settings.stackPlusTwo === State.ON && has(player, CardType.PLUS_TWO) ||
+                    this.settings.jokerCancelsPlusTwo === State.ON && has(player, CardType.JOKER) ||
+                    this.settings.stackPlusFourOverPlusTwo === State.ON && has(player, CardType.PLUS_FOUR)
+                ) break;
+                for (; this.plusCount > 0; this.plusCount--) {
+                    this.draw(player);
+                    await sleep(this.settings.drawingIntervalCooldown);
+                }
+                this.nextTurn();
+            },
+            [CardType.PLUS_FOUR]: () => {
+                const player = this.players[this.turn];
+                this.plusCount += 4;
+                if (
+                    this.settings.stackPlusFour === State.ON && has(player, CardType.PLUS_FOUR) ||
+                    this.settings.stackPlusTwoOverPlusFour === State.ON && has(player, CardType.PLUS_TWO)
+                ) break;
+                for (; this.plusCount > 0; this.plusCount--) {
+                    this.draw(player);
+                    await sleep(this.settings.drawingIntervalCooldown);
+                }
+                this.nextTurn();
+            },
+            [CardType.SKIPS]: () => {
+                const player = this.players[this.turn];
+                player.send(JSON.stringify({
+                    type: PayloadType.TURN_SKIPPED
+                }));
+                this.nextTurn();
+            },
+            [CardType.CHANGE_DIRECTION]: () => {
+                if (this.direction > 0) {
+                    this.direction = -1   
+                } else {
+                    this.direction = 1
+                }
+                // Boomer: this.direction = 2 - this.direction;
+            }
+        }
     }
     onLeave(ws) {
         this.broadcast({
@@ -135,14 +179,7 @@ class UnoRoom extends Room {
             type: PayloadType.GAME_TURN,
             data: this.turn
         });
-        switch (top.type) {
-            case CardType.PLUS_TWO:
-                break;
-            case CardType.SKIPS:
-                break;
-            case CardType.CHANGE_DIRECTION:
-                break;
-        }
+        this.cardsHandlers[top.type]?.();
     }
     async play(player, cardId) {
         if (
@@ -178,53 +215,15 @@ class UnoRoom extends Room {
         if (card.color === CardColor.BLACK)
             this.waitingColorFrom = player;
 
-        if (card.type === CardType.CHANGE_DIRECTION) {
-            if (this.direction > 0) {
-                this.direction = -1   
-            } else {
-                this.direction = 1
-            }
-            // Boomer: this.direction = 2 - this.direction;
-        }
+        if (card.type === CardType.SKIPS)
+            this.cardsHandlers[card.type]?.();
 
         this.top = cardId;
         this.nextTurn();
 
-        const nextPlayer = this.players[this.turn];
+        if (card.type !== CardType.SKIPS)
+            this.cardsHandlers[card.type]?.();
 
-        switch (card.type) {
-            case CardType.PLUS_TWO:
-                this.plusCount += 2;
-                if (
-                    this.settings.stackPlusTwo === State.ON && has(nextPlayer, CardType.PLUS_TWO) ||
-                    this.settings.jokerCancelsPlusTwo === State.ON && has(nextPlayer, CardType.JOKER) ||
-                    this.settings.stackPlusFourOverPlusTwo === State.ON && has(nextPlayer, CardType.PLUS_FOUR)
-                ) break;
-                for (; this.plusCount > 0; this.plusCount--) {
-                    this.draw(nextPlayer);
-                    await sleep(this.settings.drawingIntervalCooldown);
-                }
-                this.nextTurn();
-                break;
-            case CardType.PLUS_FOUR:
-                this.plusCount += 4;
-                if (
-                    this.settings.stackPlusFour === State.ON && has(nextPlayer, CardType.PLUS_FOUR) ||
-                    this.settings.stackPlusTwoOverPlusFour === State.ON && has(nextPlayer, CardType.PLUS_TWO)
-                ) break;
-                for (; this.plusCount > 0; this.plusCount--) {
-                    this.draw(nextPlayer);
-                    await sleep(this.settings.drawingIntervalCooldown);
-                }
-                this.nextTurn();
-                break;
-            case CardType.SKIPS:
-                nextPlayer.send(JSON.stringify({
-                    type: PayloadType.TURN_SKIPPED
-                }));
-                this.nextTurn();
-                break;
-        }
         this.broadcast({
             type: PayloadType.GAME_TURN,
             data: this.turn
