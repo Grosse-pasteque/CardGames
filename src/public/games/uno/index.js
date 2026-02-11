@@ -15,11 +15,16 @@
 
     const colorChooser = document.getElementById('color-chooser');
     const turnSkip = document.getElementById('turn-skip');
+    const skip = document.getElementById('skip');
+    const currentDirection = document.getElementById('direction');
+    const currentColor = document.getElementById('color');
 
     const PayloadType = await jsonFetch('/enums/UnoPayloadType'),
           CardType = await jsonFetch('/enums/UnoCardType'),
           CardColor = await jsonFetch('/enums/UnoCardColor'),
           DECK = await jsonFetch('/data/uno');
+
+    const CardColorToName = Object.fromEntries(Object.entries(CardColor).map(([k, v]) => [v, k.toLowerCase()]));
 
     const ws = new WebSocket(`ws://localhost:8888?id=${roomId}&nickname=${encodeURIComponent(localStorage.nickname || '')}`);
     ws.onmessage = message => {
@@ -30,6 +35,7 @@
                 addCard(playerId, data);
                 break;
             case PayloadType.CHOSEN_COLOR:
+                currentColor.style.backgroundImage = 'url(assets/' + CardColorToName[data] + '.png)';
                 break;
             case PayloadType.TURN_SKIPPED:
                 turnSkip.animate([
@@ -43,10 +49,15 @@
             // NOTE: would be better to send those offer HTTP in it fails
             case PayloadType.PLAYER_DISCARDED:
                 removeCard(data.id, data.cardId);
-                if (data.id === playerId && DECK[data.cardId].color === CardColor.BLACK) {
-                    popup.innerHTML = '';
-                    popup.appendChild(colorChooser);
-                    showPopup();
+                const card = DECK[data.cardId];
+                if (card.color === CardColor.BLACK) {
+                    if (data.id === playerId) {
+                        popup.innerHTML = '';
+                        popup.appendChild(colorChooser);
+                        showPopup();
+                    }
+                } else {
+                    currentColor.style.backgroundImage = 'url(assets/' + CardColorToName[card.color] + '.png)';
                 }
                 break;
             case PayloadType.PLAYER_DREW:
@@ -66,6 +77,7 @@
 
             // All
             case PayloadType.GAME_TURN: // whose turn is it
+                if (playerTurn) currentDirection.style.transform = `rotateX(${data - playerTurn < 0 ? 180 : 0}deg)`;
                 players[playerTurn]?.nicknameDisplay.classList.remove('playing');
                 players[playerTurn = data]?.nicknameDisplay.classList.add('playing');
                 break;
