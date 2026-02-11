@@ -36,7 +36,7 @@
                 if (data.id === playerId && DECK[data.cardId].color === CardColor.BLACK) {
                     popup.innerHTML = '';
                     popup.appendChild(colorChooser);
-                    popup.style.opacity = 1;
+                    showPopup();
                 }
                 break;
             case PayloadType.PLAYER_DREW:
@@ -76,7 +76,7 @@
     };
     ws.onclose = e => {
         popup.innerHTML = `<h1>Disconnected</h1>Reason: <code>${e.reason || 'Server down'}</code><br>Code: <code>${e.code}</code>`;
-        popup.style.opacity = 1;
+        showPopup();
     };
     ws.send = (type, data) => WebSocket.prototype.send.call(ws, JSON.stringify(data === undefined ? { type } : { type, data }));
 
@@ -88,13 +88,13 @@
 
     document.body.addEventListener('click', event => {
         if (event.target === document.body)
-            popup.style = '';
+            hidePopup();
     });
 
     colorChooser.addEventListener('click', event => {
         if (event.target.tagName === 'I') {
             ws.send(PayloadType.CHOOSE_COLOR, parseInt(event.target.dataset.id));
-            popup.style = '';
+            hidePopup();
         }
     });
 
@@ -102,6 +102,18 @@
     async function jsonFetch(...args) {
         const rk = await fetch(...args);
         return await rk.json();
+    }
+
+    function showPopup() {
+        popup.style.opacity = 1;
+        popup.style.display = 'block';
+    }
+
+    function hidePopup() {
+        popup.style.opacity = 0;
+        setTimeout(() => {
+            popup.style.display = 'none';
+        }, 1000);
     }
 
     const config = {
