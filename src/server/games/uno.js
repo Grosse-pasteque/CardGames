@@ -216,7 +216,7 @@ class UnoRoom extends Room {
     };
 
     constructor(...args) {
-        super(...args, 'uno');
+        super(...args);
         this.players = []; // { nickname, hand }
         this.pile = [];
         this.discard = [...DECK_IDS];

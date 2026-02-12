@@ -5,8 +5,10 @@ const express = require('express');
 const WebSocket = require('ws');
 
 const Games = require('./games');
-const { Room, rooms, idToRoom, getRoomStatus } = require('./room');
+const { Room, rooms, stats, idToRoom, getRoomStatus } = require('./room');
 const { broadcastRealtime, realtimeClients } = require('./realtime');
+
+for (const id in Games) stats[id] = { id, rooms: 0, players: 0 };
 
 const app = express();
 const server = http.createServer(app);
@@ -37,45 +39,13 @@ app.get(['/enums/:name', '/data/:name'], (req, res) => {
         res.sendFile(filePath);
     });
 });
-app.get('/games', (req, res) => res.status(200).send(games));
+app.get('/games', (req, res) => res.status(200).send(Object.values(stats)));
 app.get('/rooms', (req, res) => res.status(200).send([...rooms].map(getRoomStatus)));
 app.post('/make/:id/', (req, res) => {
-    const room = new Games[req.params.id](req.body);
+    const gameId = req.params.id;
+    const room = new Games[gameId](req.body, gameId);
     res.redirect(303, room.url + '&host=true'); // prevents form resubmission
 });
-
-const games = [{
-    id: "uno",
-    name: "Uno",
-    waiting: 3,
-    running: 5
-}, {
-    id: "chiure",
-    name: "Chiure",
-    waiting: 1,
-    running: 2
-}, {
-    id: "mystigri",
-    name: "Mystigri",
-    waiting: 3,
-    running: 5
-}];
-
-// Testing purposes
-const PayloadType = require('./enums/PayloadType');
-
-setInterval(() => {
-    const id = ~~(Math.random() * 3);
-    broadcastRealtime({
-        type: PayloadType.GAME_STATUS_UPDATE,
-        data: {
-            id: games[id].id,
-            name: games[id].name,
-            waiting: ~~(Math.random() * 20),
-            running: ~~(Math.random() * 20)
-        }
-    });
-}, 1000);
 
 const ipsOnCooldown = new Map;
 wss.on('connection', (ws, req) => {

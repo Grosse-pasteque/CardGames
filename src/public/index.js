@@ -45,7 +45,7 @@
     function updateGameItem(game) {
         const item = (gameItems[game.id] ||= gamesList.appendChild(document.createElement('div')));
         item.dataset.id = game.id;
-        item.innerHTML = `<b>${game.name}</b><br>Queue: ${game.waiting}<br>Games: ${game.running}`;
+        item.innerHTML = `<b>${game.id}</b><br>Rooms: ${game.rooms}<br>Players: ${game.players}`;
     }
 
     function updateRoomItem(room) {

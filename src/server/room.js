@@ -12,6 +12,8 @@ const { broadcastRealtime } = require('./realtime');
 let maxRoomId = 0;
 const idToRoom = new Map;
 const rooms = new Set;
+const stats = {};
+
 
 class Room {
     constructor(settings, gameId) {
@@ -24,6 +26,8 @@ class Room {
         this.handlers = {};
         rooms.add(this);
         idToRoom.set(this.id, this);
+        stats[gameId].rooms++;
+        updateGameStatus(gameId);
         updateRoomStatus(this);
     }
     // NOTE: maybe would be better as a WebSocket method
@@ -35,10 +39,14 @@ class Room {
         ws.id = this.clientId++;
         this.clients.add(ws);
         this.onJoin?.(ws);
+        stats[this.gameId].players++;
+        updateGameStatus(this.gameId);
         updateRoomStatus(this);
     }
     leave(ws) {
         if (!this.clients.delete(ws)) return;
+        stats[this.gameId].players--;
+        updateGameStatus(this.gameId);
         if (ws.id === 0) return this.destroy();
         this.onLeave?.(ws);
         updateRoomStatus(this);
@@ -49,6 +57,8 @@ class Room {
         rooms.delete(this);
         idToRoom.delete(this.id);
         this.onDestroy?.();
+        stats[this.gameId].rooms--;
+        updateGameStatus(this.gameId);
         deleteRoomStatus(this);
     }
     get url() {
@@ -79,6 +89,13 @@ function deleteRoomStatus(room) {
     });
 }
 
+function updateGameStatus(id) {
+    broadcastRealtime({
+        type: PayloadType.GAME_STATUS_UPDATE,
+        data: stats[id]
+    });
+}
+
 function getRoomStatus(room) {
     return {
         id: room.id,
@@ -88,4 +105,4 @@ function getRoomStatus(room) {
     }
 }
 
-module.exports = { Room, rooms, idToRoom, State, DefaultConfig, getRoomStatus, updateRoomStatus, deleteRoomStatus };
+module.exports = { Room, rooms, stats, idToRoom, State, DefaultConfig, getRoomStatus, updateRoomStatus, deleteRoomStatus };
