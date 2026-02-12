@@ -90,6 +90,9 @@ class UnoRoom extends Room {
                 this.broadcast({
                     type: PayloadType.DIRECTION_CHANGED
                 });
+            },
+            [CardType.JOKER]: () => {
+                this.plusCount = 0;
             }
         }
     }
