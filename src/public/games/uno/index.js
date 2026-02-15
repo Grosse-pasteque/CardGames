@@ -17,6 +17,7 @@
 
     const colorChooser = document.getElementById('color-chooser');
     const turnSkip = document.getElementById('turn-skip');
+    const sayUno = document.getElementById('say-uno');
     const skip = document.getElementById('skip');
     const currentDirection = document.getElementById('direction');
     const currentColor = document.getElementById('color');
@@ -49,6 +50,14 @@
                     { width: '60%' },
                     {}
                 ], { duration: 300 });
+                break;
+            case PayloadType.SAID_UNO:
+                players[data].playerElement.appendChild(sayUno);
+                sayUno.animate([
+                    { display: 'block' },
+                    { opacity: '1' },
+                    {}
+                ], { duration: 700 });
                 break;
             case PayloadType.DIRECTION_CHANGED:
                 direction = -direction;

@@ -94,6 +94,7 @@ class UnoRoom extends Room {
             for (const player of this.players) {
                 player.hand = [];
                 player.index = i++;
+                player.saidUno = false;
             }
             for (let i = 0; i < this.settings.startCards; i++)
                 for (const player of this.players) {
@@ -151,6 +152,8 @@ class UnoRoom extends Room {
 
             this.turn = player.index; // for interceptions
             player.hand.remove(cardId);
+            if (player.hand.length === 1)
+                player.saidUno = false;
             this.broadcast({
                 type: PayloadType.PLAYER_DISCARDED,
                 data: {
@@ -213,6 +216,21 @@ class UnoRoom extends Room {
                 type: PayloadType.GAME_TURN,
                 data: this.players[this.turn].id
             });
+        },
+        [PayloadType.SAY_UNO]: function(player) {
+            if (player.saidUno || player.hand.length !== 1) return;
+            player.saidUno = true;
+            this.broadcast({
+                type: PayloadType.SAID_UNO,
+                data: player.id
+            });
+        },
+        [PayloadType.SAY_COUNTER_UNO]: async function(player, id) {
+            const other = this.players.find(p => p.id === id);
+            if (!other || other.saidUno || other.hand.length !== 1) return;
+            this.draw(other);
+            await sleep(this.settings.drawingIntervalCooldown);
+            this.draw(other);
         }
     };
 

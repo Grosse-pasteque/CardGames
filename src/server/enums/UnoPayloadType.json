@@ -22,5 +22,6 @@
     "DRAW_CARD": 16,
     "SKIP": 17,
     "SAY_UNO": 18,
-    "SAY_COUNTER_UNO": 19
+    "SAY_COUNTER_UNO": 19,
+    "SAID_UNO": 20
 }
