@@ -224,7 +224,6 @@
         if (id === playerId) {
             handSlots.bottom.appendChild(playerElement);
             handElement.addEventListener('click', event => {
-                skip.style.opacity = '';
                 discarded = event.target;
                 const id = parseInt(discarded?.dataset.id);
                 if (!Number.isInteger(id) || id < 0) return;
