@@ -52,12 +52,14 @@
                 ], { duration: 300 });
                 break;
             case PayloadType.SAID_UNO:
-                players[data].playerElement.appendChild(sayUno);
+                const { playerElement, sayUnoElement } = players[data];
+                playerElement.appendChild(sayUno);
                 sayUno.animate([
                     { display: 'block' },
                     { opacity: '1' },
                     {}
                 ], { duration: 700 });
+                sayUnoElement.style.opacity = '';
                 break;
             case PayloadType.DIRECTION_CHANGED:
                 direction = -direction;
