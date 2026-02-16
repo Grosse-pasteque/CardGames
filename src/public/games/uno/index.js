@@ -317,7 +317,22 @@
             }).onfinish = () => {
                 ghost.remove();
                 setCardPosition(target, cardId);
-                handElement.appendChild(target);
+                let before;
+                if (player.cards > 1) {
+                    const card = DECK[cardId];
+                    for (const cardElement of handElement.children) {
+                        const other = DECK[cardElement.dataset.id];
+                        if (card.color <= other.color && card.value <= other.value) {
+                            before = cardElement;
+                            break;
+                        }
+                    }
+                }
+                if (before) {
+                    handElement.insertBefore(target, before);
+                } else {
+                    handElement.appendChild(target);
+                }
             };
         };
         else ghost.animate(
