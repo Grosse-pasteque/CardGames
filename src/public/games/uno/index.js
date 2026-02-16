@@ -322,7 +322,7 @@
                     const card = DECK[cardId];
                     for (const cardElement of handElement.children) {
                         const other = DECK[cardElement.dataset.id];
-                        if (card.color <= other.color && card.value <= other.value) {
+                        if (card.color * 100 + card.value <= other.color * 100 + other.value) {
                             before = cardElement;
                             break;
                         }
