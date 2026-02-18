@@ -1,7 +1,7 @@
 (async function() {
     'use strict';
 
-    const settings = await jsonFetch('/games/uno/settings.json');
+    const settings = await jsonFetch('/games/uno/settings');
     const submitButton = config.lastElementChild;
     submitButton.remove();
 

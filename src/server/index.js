@@ -4,6 +4,7 @@ const http = require('http');
 const express = require('express');
 const WebSocket = require('ws');
 
+const State = require('./enums/State');
 const Games = require('./games');
 const { Room, rooms, stats, idToRoom, getRoomStatus } = require('./room');
 const { broadcastRealtime, realtimeClients } = require('./realtime');
@@ -14,9 +15,6 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const enumsDir = path.join(__dirname, 'enums');
-const dataDir = path.join(__dirname, 'data');
-
 app.set('trust proxy', true);
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -26,19 +24,8 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..', 'public'), { dotfiles: 'ignore' }));
-app.get(['/enums/:name', '/data/:name'], (req, res) => {
-    const filePath = path.join(__dirname, req.url + '.json');
-
-    fs.access(filePath, fs.constants.R_OK, (err) => {
-        if (err) {
-            res.sendStatus(404);
-            return;
-        }
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day
-        res.sendFile(filePath);
-    });
-});
+app.use('/enums', express.static(path.join(__dirname, 'enums')));
+app.use('/data', express.static(path.join(__dirname, 'data')));
 app.get('/games', (req, res) => res.status(200).send(Object.values(stats)));
 app.get('/rooms', (req, res) => res.status(200).send([...rooms].map(getRoomStatus)));
 app.post('/make/:id/', (req, res) => {

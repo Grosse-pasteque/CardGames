@@ -24,13 +24,13 @@
         }
     };
 
-    const games = await jsonFetch('/games');
+    const games = await jsonFetch('/games', true);
     games.forEach(updateGameItem);
     gamesList.addEventListener('click', e => {
         if (e.target.tagName !== 'DIV') return;
         location.href = location.origin + '/make/' + e.target.dataset.id;
     });
-    const rooms = await jsonFetch('/rooms');
+    const rooms = await jsonFetch('/rooms', true);
     rooms.forEach(updateRoomItem);
     roomsList.addEventListener('click', e => {
         if (e.target.tagName !== 'DIV') return;
