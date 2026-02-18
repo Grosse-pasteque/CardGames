@@ -59,9 +59,4 @@
         roomsList.removeChild(roomItems[roomId]);
         delete roomItems[roomId];
     }
-
-    async function jsonFetch(...args) {
-        const rk = await fetch(...args);
-        return await rk.json();
-    }
 })();

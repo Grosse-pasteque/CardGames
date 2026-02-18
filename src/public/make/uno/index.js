@@ -16,9 +16,4 @@
         config.append(field, document.createElement('br'));
     }
     config.appendChild(submitButton);
-
-    async function jsonFetch(...args) {
-        const rk = await fetch(...args);
-        return await rk.json();
-    }
 })();

@@ -156,12 +156,6 @@
         currentColor.style.backgroundImage = 'url(assets/' + CardColorToName[color] + '.png)';
     }
 
-    // TODO: should put this inside theme.js (but rename the file)
-    async function jsonFetch(...args) {
-        const rk = await fetch(...args);
-        return await rk.json();
-    }
-
     function showPopup() {
         popup.style.opacity = 1;
         popup.style.display = 'block';
