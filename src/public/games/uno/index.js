@@ -24,7 +24,7 @@
     const PayloadType = await jsonFetch('/enums/UnoPayloadType'),
           CardType = await jsonFetch('/enums/UnoCardType'),
           CardColor = await jsonFetch('/enums/UnoCardColor'),
-          DECK = await jsonFetch('/data/uno');
+          DECK = await jsonFetch('/data/uno/deck');
 
     const CardColorToName = Object.fromEntries(Object.entries(CardColor).map(([k, v]) => [v, k.toLowerCase()]));
 

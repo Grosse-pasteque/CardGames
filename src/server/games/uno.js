@@ -8,7 +8,7 @@ function sleep(s) {
     return new Promise(r => setTimeout(r, s * 1000));
 }
 
-const DECK = require('../data/uno');
+const DECK = require('../data/uno/deck');
 const CARDS_COUNT = DECK.length
 const DECK_IDS = Array(CARDS_COUNT).fill().map((_, i) => i);
 

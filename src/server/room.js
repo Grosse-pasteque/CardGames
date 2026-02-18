@@ -20,7 +20,7 @@ class Room {
         this.id = maxRoomId++;
         this.gameId = gameId;
         // FIXME: settings don't have verified values
-        this.settings = Object.assign(DefaultConfig, require(`../public/games/${gameId}/settings`), settings);
+        this.settings = Object.assign(DefaultConfig, require(`./data/${gameId}/settings`), settings);
         this.clientId = 0;
         this.clients = new Set;
         this.handlers = {};
@@ -105,4 +105,4 @@ function getRoomStatus(room) {
     }
 }
 
-module.exports = { Room, rooms, stats, idToRoom, State, DefaultConfig, getRoomStatus, updateRoomStatus, deleteRoomStatus };
+module.exports = { Room, rooms, stats, idToRoom, DefaultConfig, getRoomStatus, updateRoomStatus, deleteRoomStatus };
