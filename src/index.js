@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '..', 'public'), { dotfiles: 'ignore' }));
+app.use(express.static(path.join(__dirname, 'public'), { dotfiles: 'ignore' }));
 app.use('/enums', express.static(path.join(__dirname, 'enums')));
 app.use('/data', express.static(path.join(__dirname, 'data')));
 app.get('/games', (req, res) => res.status(200).send(Object.values(stats)));
