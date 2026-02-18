@@ -37,18 +37,21 @@
 }, {
     "title": "Twins - ALIKE",
     "name": "twins",
+    "type": "radio",
     "attributes": [
         { "name": "value", "value": "alike" }
     ]
 }, {
     "title": "      - MIXED",
     "name": "twins",
+    "type": "radio",
     "attributes": [
         { "name": "value", "value": "mixed" }
     ]
 }, {
     "title": "      - OFF",
     "name": "twins",
+    "type": "radio",
     "attributes": [
         { "name": "value", "value": "off" }
     ]
