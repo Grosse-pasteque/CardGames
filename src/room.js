@@ -16,10 +16,10 @@ class Room {
         // FIXME: settings don't have verified values
         const defaultGameSettings = require(`./data/${gameId}/settings`);
         this.settings = {};
-        for (const { name, type, attributes } of defaultSettings)
-            this.setSetting(name, type, attributes, settings[name]);
-        for (const { name, type, attributes } of defaultGameSettings)
-            this.setSetting(name, type, attributes, settings[name]);
+        for (const field of defaultSettings)
+            this.setSetting(field, settings[field.name]);
+        for (const field of defaultGameSettings)
+            this.setSetting(field, settings[field.name]);
         this.clientId = 0;
         this.clients = new Set;
         this.handlers = {};
@@ -29,58 +29,35 @@ class Room {
         updateGameStatus(gameId);
         updateRoomStatus(this);
     }
-    setSetting(name, type, attributes, settingValue) {
-        let d;
-        switch (type) {
+    setSetting(field, value) {
+        switch (field.type) {
+            case 'number':
+                value = parseFloat(value);
+                if (
+                    isNaN(value) ||
+                    'min' in field && value < field.min ||
+                    'max' in field && value > field.max
+                )
+                    value = field.value;
+                else if ('step' in field) {
+                    const m = 10 ** field.step.toString().split('.')[1]?.length || 0;
+                    if (value * m % (field.step * m))
+                        value = field.value;
+                }
+                break;
             case 'text':
-            case 'radio':
+                if ('maxlength' in field && value.length > field.maxlength)
+                    value = field.value;
                 break;
             case 'checkbox':
-                d = false;
-                settingValue = settingValue === 'on';
+                value = value === 'on';
                 break;
-            case 'number':
-                settingValue = parseFloat(settingValue);
-                break;
-        }
-        top: for (const { name, value } of attributes) switch (name) {
-            case 'maxlength':
-                if (settingValue.length > value) {
-                    settingValue = d;
-                    break top;
-                }
-                break;
-            case 'value':
-                d = value;
-                if (type === 'number' && isNaN(settingValue)) {
-                    settingValue = value;
-                    break top;
-                }
-                break;
-            case 'checked':
-                d = true;
-                break;
-            case 'max':
-                if (settingValue > value) {
-                    settingValue = d;
-                    break top;
-                }
-                break;
-            case 'min':
-                if (settingValue < value) {
-                    settingValue = d;
-                    break top;
-                }
-                break;
-            case 'step':
-                const m = 10 ** value.split('.')[1]?.length || 0;
-                if (settingValue * m % (value * m)) {
-                    settingValue = d;
-                    break top;
-                }
+            case 'select':
+                if (!field.options.includes(value))
+                    value = field.options[field.value];
                 break;
         }
-        this.settings[name] = settingValue;
+        this.settings[field.name] = value;
     }
     // NOTE: maybe would be better as a WebSocket method
     join(ws, code) {
