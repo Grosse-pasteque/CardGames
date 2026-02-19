@@ -3,6 +3,7 @@
 
     const s = new URLSearchParams(location.search);
     const roomId = s.get('id');
+    const roomCode = s.get('code');
     const isHost = s.get('host') === "true";
 
     let hasStarted = false,
@@ -28,7 +29,7 @@
 
     const CardColorToName = Object.fromEntries(Object.entries(CardColor).map(([k, v]) => [v, k.toLowerCase()]));
 
-    const ws = new WebSocket(`${location.protocol === 'http:' ? 'ws' : 'wss'}://${location.host}?id=${roomId}&nickname=${encodeURIComponent(localStorage.nickname || '')}`);
+    const ws = new WebSocket(`${location.protocol === 'http:' ? 'ws' : 'wss'}://${location.host}?id=${roomId}&nickname=${encodeURIComponent(localStorage.nickname || '')}${roomCode ? '&code=' + roomCode : ''}`);
     ws.onmessage = message => {
         const { type, data } = JSON.parse(message.data);
         switch (type) {

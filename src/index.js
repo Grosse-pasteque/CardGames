@@ -4,7 +4,6 @@ const http = require('http');
 const express = require('express');
 const WebSocket = require('ws');
 
-const State = require('./enums/State');
 const Games = require('./games');
 const { Room, rooms, stats, idToRoom, getRoomStatus } = require('./room');
 const { broadcastRealtime, realtimeClients } = require('./realtime');
@@ -27,7 +26,9 @@ app.use(express.static(path.join(__dirname, 'public'), { dotfiles: 'ignore' }));
 app.use('/enums', express.static(path.join(__dirname, 'enums')));
 app.use('/data', express.static(path.join(__dirname, 'data')));
 app.get('/games', (req, res) => res.status(200).send(Object.values(stats)));
-app.get('/rooms', (req, res) => res.status(200).send([...rooms].map(getRoomStatus)));
+app.get('/rooms', (req, res) => res.status(200).send([...rooms]
+    .filter(room => room.settings.public)
+    .map(getRoomStatus)));
 app.post('/make/:id/', (req, res) => {
     const gameId = req.params.id;
     const room = new Games[gameId](req.body, gameId);

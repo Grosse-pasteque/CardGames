@@ -1,5 +1,4 @@
 const { Room } = require('../room');
-const State = require('../enums/State');
 const PayloadType = require('../enums/UnoPayloadType');
 const CardType = require('../enums/UnoCardType');
 const CardColor = require('../enums/UnoCardColor');
@@ -35,9 +34,9 @@ const cardsHandlers = {
         const player = this.players[this.turn];
         this.plusCount += 2;
         if (
-            this.settings.stackPlusTwo === State.ON && has(player, CardType.PLUS_TWO) ||
-            this.settings.jokerCancelsPlusTwo === State.ON && has(player, CardType.JOKER) ||
-            this.settings.stackPlusFourOverPlusTwo === State.ON && has(player, CardType.PLUS_FOUR)
+            this.settings.stackPlusTwo && has(player, CardType.PLUS_TWO) ||
+            this.settings.jokerCancelsPlusTwo && has(player, CardType.JOKER) ||
+            this.settings.stackPlusFourOverPlusTwo && has(player, CardType.PLUS_FOUR)
         ) return player.send(JSON.stringify({
             type: PayloadType.CAN_SKIP
         }));
@@ -51,7 +50,7 @@ const cardsHandlers = {
         const player = this.players[this.turn];
         this.plusCount += 4;
         if (
-            this.settings.stackPlusFour === State.ON && has(player, CardType.PLUS_FOUR)
+            this.settings.stackPlusFour && has(player, CardType.PLUS_FOUR)
         ) return player.send(JSON.stringify({
             type: PayloadType.CAN_SKIP
         }));
@@ -115,9 +114,9 @@ class UnoRoom extends Room {
                 top = DECK[this.top];
                 if (
                     top.color === CardColor.BLACK ||
-                    this.settings.startCardPlusTwoAllowed === State.OFF && top.type === CardType.PLUS_TWO ||
-                    this.settings.startCardSkipTurnAllowed === State.OFF && top.type === CardType.SKIP_TURN ||
-                    this.settings.startCardChangeDirectionAllowed === State.OFF && top.type === CardType.CHANGE_DIRECTION
+                    !this.settings.startCardPlusTwoAllowed && top.type === CardType.PLUS_TWO ||
+                    !this.settings.startCardSkipTurnAllowed && top.type === CardType.SKIP_TURN ||
+                    !this.settings.startCardChangeDirectionAllowed && top.type === CardType.CHANGE_DIRECTION
                 ) {
                     this.pile.unshift(this.top);
                 } else break;
@@ -155,7 +154,7 @@ class UnoRoom extends Room {
                     card.color === CardColor.BLACK ||
                     top.color === CardColor.BLACK && card.color === this.chosenColor
                 )
-            ) || this.settings.interceptions === State.ON && ( // +2/+4 intercepts ?
+            ) || this.settings.interceptions && ( // +2/+4 intercepts ?
                 top.color === card.color &&
                 top.type === card.type &&
                 top.value === card.value &&

@@ -1,11 +1,5 @@
-const State = require('./enums/State');
 const PayloadType = require('./enums/PayloadType');
-const DefaultConfig = {
-    name: "Room",
-    public: State.ON,
-    code: "",
-    maxPlayers: 100
-};
+const defaultSettings = require('./data/defaultSettings');
 
 const { broadcastRealtime } = require('./realtime');
 
@@ -20,7 +14,12 @@ class Room {
         this.id = maxRoomId++;
         this.gameId = gameId;
         // FIXME: settings don't have verified values
-        this.settings = Object.assign(DefaultConfig, require(`./data/${gameId}/settings`), settings);
+        const defaultGameSettings = require(`./data/${gameId}/settings`);
+        this.settings = {};
+        for (const { name, type, attributes } of defaultSettings)
+            this.setSetting(name, type, attributes, settings[name]);
+        for (const { name, type, attributes } of defaultGameSettings)
+            this.setSetting(name, type, attributes, settings[name]);
         this.clientId = 0;
         this.clients = new Set;
         this.handlers = {};
@@ -30,11 +29,64 @@ class Room {
         updateGameStatus(gameId);
         updateRoomStatus(this);
     }
+    setSetting(name, type, attributes, settingValue) {
+        let d;
+        switch (type) {
+            case 'text':
+            case 'radio':
+                break;
+            case 'checkbox':
+                d = false;
+                settingValue = settingValue === 'on';
+                break;
+            case 'number':
+                settingValue = parseFloat(settingValue);
+                break;
+        }
+        top: for (const { name, value } of attributes) switch (name) {
+            case 'maxlength':
+                if (settingValue.length > value) {
+                    settingValue = d;
+                    break top;
+                }
+                break;
+            case 'value':
+                d = value;
+                if (type === 'number' && isNaN(settingValue)) {
+                    settingValue = value;
+                    break top;
+                }
+                break;
+            case 'checked':
+                d = true;
+                break;
+            case 'max':
+                if (settingValue > value) {
+                    settingValue = d;
+                    break top;
+                }
+                break;
+            case 'min':
+                if (settingValue < value) {
+                    settingValue = d;
+                    break top;
+                }
+                break;
+            case 'step':
+                const m = 10 ** value.split('.')[1]?.length || 0;
+                if (settingValue * m % (value * m)) {
+                    settingValue = d;
+                    break top;
+                }
+                break;
+        }
+        this.settings[name] = settingValue;
+    }
     // NOTE: maybe would be better as a WebSocket method
     join(ws, code) {
         if (this.clients.size === this.settings.maxPlayers)
             return ws.close(1009, 'Room Full');
-        if (this.settings.public === State.OFF && this.settings.code !== code)
+        if (!this.settings.public && this.settings.code !== code)
             return ws.close(1009, 'Wrong code');
         ws.id = this.clientId++;
         this.clients.add(ws);
@@ -63,7 +115,7 @@ class Room {
     }
     get url() {
         let s = `/games/${this.gameId}?id=${this.id}`;
-        if (this.settings.public === State.OFF)
+        if (!this.settings.public)
             s += `&code=${encodeURIComponent(this.settings.code)}`;
         return s;
     }
@@ -76,14 +128,14 @@ class Room {
 }
 
 function updateRoomStatus(room) {
-    if (room.settings.public === State.ON) broadcastRealtime({
+    if (room.settings.public) broadcastRealtime({
         type: PayloadType.ROOM_STATUS_UPDATE,
         data: getRoomStatus(room)
     });
 }
 
 function deleteRoomStatus(room) {
-    if (room.settings.public === State.ON) broadcastRealtime({
+    if (room.settings.public) broadcastRealtime({
         type: PayloadType.ROOM_STATUS_DELETE,
         data: room.id
     });
@@ -105,4 +157,4 @@ function getRoomStatus(room) {
     }
 }
 
-module.exports = { Room, rooms, stats, idToRoom, DefaultConfig, getRoomStatus, updateRoomStatus, deleteRoomStatus };
+module.exports = { Room, rooms, stats, idToRoom, getRoomStatus };

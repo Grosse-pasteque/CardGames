@@ -1,11 +1,11 @@
 [{
     "title": "Start Cards",
     "name": "startCards",
-    "type": "number" ,
+    "type": "number",
     "attributes": [
+        { "name": "value", "value": "7" },
         { "name": "min", "value": "0" }, 
-        { "name": "max", "value": "100" }, 
-        { "name": "value", "value": "7" }
+        { "name": "max", "value": "100" } 
     ]
 }, {
     "title": "Start Card Plus Two Allowed",
@@ -39,7 +39,8 @@
     "name": "twins",
     "type": "radio",
     "attributes": [
-        { "name": "value", "value": "alike" }
+        { "name": "value", "value": "alike" },
+        { "name": "checked", "value": "true" }
     ]
 }, {
     "title": "      - MIXED",
@@ -92,7 +93,7 @@
 }, {
     "title": "Wrong Card Penality",
     "name": "wrongCardPenality",
-    "type": "number" ,
+    "type": "number",
     "attributes": [
         { "name": "min", "value": "0" },
         { "name": "max", "value": "100" },
@@ -101,48 +102,48 @@
 }, {
     "title": "Counter Uno Penality",
     "name": "counterUnoPenality",
-    "type": "number" ,
+    "type": "number",
     "attributes": [
+        { "name": "value", "value": "2" },
         { "name": "min", "value": "0" },
-        { "name": "max", "value": "100" },
-        { "name": "value", "value": "2" }
+        { "name": "max", "value": "100" }
     ]
 }, {
     "title": "Liar Oponent Penality",
     "name": "liarOponentPenality",
-    "type": "number" ,
+    "type": "number",
     "attributes": [
+        { "name": "value", "value": "2" },
         { "name": "min", "value": "0" },
-        { "name": "max", "value": "100" },
-        { "name": "value", "value": "2" }
+        { "name": "max", "value": "100" }
     ]
 }, {
     "title": "Liar Self Penality",
     "name": "liarSelfPenality",
-    "type": "number" ,
+    "type": "number",
     "attributes": [
+        { "name": "value", "value": "2" },
         { "name": "min", "value": "0" },
-        { "name": "max", "value": "100" },
-        { "name": "value", "value": "2" }
+        { "name": "max", "value": "100" }
     ]
 }, {
     "title": "Drawing Interval Cooldown",
     "name": "drawingIntervalCooldown",
-    "type": "number" ,
+    "type": "number",
     "attributes": [
+        { "name": "value", "value": "0.3" },
         { "name": "step", "value": "0.1" },
         { "name": "min", "value": "0" },
-        { "name": "max", "value": "1" },
-        { "name": "value", "value": "0.3" }
+        { "name": "max", "value": "1" }
     ]
 }, {
     "title": "Inactive Timeout",
     "name": "invactiveTimeout",
-    "type": "number" ,
+    "type": "number",
     "attributes": [
+        { "name": "value", "value": "10" },
         { "name": "step", "value": "1" },
         { "name": "min", "value": "5" },
-        { "name": "max", "value": "30" },
-        { "name": "value", "value": "10" }
+        { "name": "max", "value": "30" }
     ]
 }]

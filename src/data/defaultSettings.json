@@ -1,29 +1,29 @@
 [{
     "title": "Room Name",
     "name": "name",
-    "type": "text" ,
+    "type": "text",
     "attributes": [
-        { "name": "maxlength", "value": "20" },
-        { "name": "value", "value": "Room" }
+        { "name": "value", "value": "Room" },
+        { "name": "maxlength", "value": "20" }
     ]
 }, {
     "title": "Room Public",
     "name": "public",
-    "type": "checkbox" ,
+    "type": "checkbox",
     "attributes": [
         { "name": "checked", "value": "true" }
     ]
 }, {
     "title": "Room Code",
     "name": "code",
-    "type": "text" ,
+    "type": "text",
     "attributes": [
         { "name": "maxlength", "value": "20" }
     ]
 }, {
     "title": "Room Max Players",
     "name": "maxPlayers",
-    "type": "number" ,
+    "type": "number",
     "attributes": [
         { "name": "value", "value": "100" },
         { "name": "max", "value": "100" },
