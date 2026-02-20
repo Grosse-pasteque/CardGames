@@ -29,7 +29,7 @@ app.get('/games', (req, res) => res.status(200).send(Object.values(stats)));
 app.get('/rooms', (req, res) => res.status(200).send([...rooms]
     .filter(room => room.settings.public)
     .map(getRoomStatus)));
-app.post('/make', (req, res) => {
+app.post('/make', cooldown(60), (req, res) => {
     console.log(req.body)
     const gameId = req.body.game;
     if (gameId in Games) {
@@ -40,6 +40,18 @@ app.post('/make', (req, res) => {
         res.sendStatus(404);
     }
 });
+
+function cooldown(s) {
+    s *= 1000;
+    const cooldowns = {};
+    return (req, res, next) => {
+        const now = Date.now();
+        if (now - (cooldowns[req.ip] || 0) < s)
+            return res.sendStatus(203);
+        cooldowns[req.ip] = now;
+        next();
+    };
+}
 
 const ipsOnCooldown = new Map;
 wss.on('connection', (ws, req) => {
