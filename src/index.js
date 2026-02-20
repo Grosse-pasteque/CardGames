@@ -29,10 +29,16 @@ app.get('/games', (req, res) => res.status(200).send(Object.values(stats)));
 app.get('/rooms', (req, res) => res.status(200).send([...rooms]
     .filter(room => room.settings.public)
     .map(getRoomStatus)));
-app.post('/make/:id/', (req, res) => {
-    const gameId = req.params.id;
-    const room = new Games[gameId](req.body, gameId);
-    res.redirect(303, room.url + '&host=true'); // prevents form resubmission
+app.post('/make', (req, res) => {
+    console.log(req.body)
+    const gameId = req.body.game;
+    if (gameId in Games) {
+        delete req.body.game;
+        const room = new Games[gameId](req.body, gameId);
+        res.redirect(303, room.url + '&host=true'); // prevents form resubmission
+    } else {
+        res.sendStatus(404);
+    }
 });
 
 const ipsOnCooldown = new Map;

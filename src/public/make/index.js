@@ -1,12 +1,19 @@
 (async function() {
     'use strict';
 
+    const params = new URLSearchParams(location.search);
     const settings = [
         ...await jsonFetch('/data/defaultSettings'),
         ...await jsonFetch('/data/uno/settings')
     ];
     const submitButton = config.lastElementChild;
     submitButton.remove();
+
+    const ghostGameInput = document.createElement('input');
+    ghostGameInput.style.display = 'none';
+    ghostGameInput.name = 'game';
+    ghostGameInput.value = params.get('game');
+    config.appendChild(ghostGameInput);
 
     for (const field of settings) {
         const fieldElement = document.createElement('span');

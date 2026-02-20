@@ -28,7 +28,7 @@
     games.forEach(updateGameItem);
     gamesList.addEventListener('click', e => {
         if (e.target.tagName !== 'DIV') return;
-        location.href = location.origin + '/make/' + e.target.dataset.id;
+        location.href = location.origin + '/make?game=' + e.target.dataset.id;
     });
     const rooms = await jsonFetch('/rooms', true);
     rooms.forEach(updateRoomItem);
