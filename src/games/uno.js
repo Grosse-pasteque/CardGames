@@ -29,7 +29,6 @@ function has(player, type) {
 }
 
 const cardsHandlers = {
-    // TODO: make it possible to skip when you have +4/+2/JOKER and top is +4/+2
     [CardType.PLUS_TWO]: async function() {
         const player = this.players[this.turn];
         this.plusCount += 2;
@@ -78,7 +77,7 @@ const cardsHandlers = {
     }
 };
 
-// FIXME: sleep makes it so you can spam cards on top of each others -> illegal
+
 class UnoRoom extends Room {
     static handlers = {
         [PayloadType.HOST_START]: async function(host) {
@@ -142,23 +141,36 @@ class UnoRoom extends Room {
 
             const top = DECK[this.top];
             const card = DECK[cardId];
-            if (!(this.turn === player.index && (
-                this.plusCount ? top.type === CardType.PLUS_TWO && (
-                    card.type === CardType.PLUS_TWO ||
-                    card.type === CardType.JOKER
-                ) || top.type === CardType.PLUS_FOUR && (
-                    card.type === CardType.PLUS_FOUR
-                ) : (
-                    top.color === card.color ||
-                    (card.type === CardType.NUMBER ? top.value === card.value : top.type === card.type) ||
-                    card.color === CardColor.BLACK ||
-                    top.color === CardColor.BLACK && card.color === this.chosenColor
-                )
-            ) || this.settings.interceptions && ( // +2/+4 intercepts ?
-                top.color === card.color &&
-                top.type === card.type &&
-                top.value === card.value &&
-                top.color !== CardColor.BLACK
+            if (this.turn === player.index) {
+                if (!(
+                    this.plusCount ? top.type === CardType.PLUS_TWO && (
+                        card.type === CardType.PLUS_TWO ||
+                        card.type === CardType.JOKER
+                    ) || top.type === CardType.PLUS_FOUR && (
+                        card.type === CardType.PLUS_FOUR
+                    ) : (
+                        top.color === card.color ||
+                        (card.type === CardType.NUMBER ? top.value === card.value : top.type === card.type) ||
+                        card.color === CardColor.BLACK ||
+                        top.color === CardColor.BLACK && card.color === this.chosenColor
+                    )
+                )) return;
+            } else if (!((
+                this.settings.interceptions ||
+                (this.turn - this.direction + this.players.length) % this.players.length === player.index // is previous player
+            ) && (
+                this.settings.twins === 'alike' ? (
+                    top.color === card.color &&
+                    top.type === card.type &&
+                    top.value === card.value &&
+                    top.color !== CardColor.BLACK
+                ) : this.settings.twins === 'mixed' ? (
+                    top.type === card.type &&
+                    top.value === card.value &&
+                    top.color !== CardColor.BLACK
+                ) : this.settings.twins === 'off' ? (
+                    false
+                ) : false
             ))) return;
 
             this.turn = player.index; // for interceptions
