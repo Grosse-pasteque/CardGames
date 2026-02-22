@@ -1,7 +1,18 @@
-const { Room } = require('../room');
+const { Room, loadedSettings } = require('../room');
 const PayloadType = require('../enums/UnoPayloadType');
 const CardType = require('../enums/UnoCardType');
 const CardColor = require('../enums/UnoCardColor');
+const TwinsMode = {
+    ALIKE: 'alike',
+    MIXED: 'mixed',
+    OFF: 'off'
+};
+
+// Object.fromEntries(loadedSettings
+//     .uno
+//     .find(s => s.name === 'twins')
+//     .options
+//     .map(o => [o.toUpperCase(), o]));
 
 function sleep(s) {
     return new Promise(r => setTimeout(r, s * 1000));
@@ -140,38 +151,40 @@ class UnoRoom extends Room {
             ) return;
 
             const top = DECK[this.top];
+            const previousTop = DECK[this.previousTop];
             const card = DECK[cardId];
             if (this.turn === player.index) {
-                if (!(
-                    this.plusCount ? top.type === CardType.PLUS_TWO && (
-                        card.type === CardType.PLUS_TWO ||
-                        card.type === CardType.JOKER
-                    ) || top.type === CardType.PLUS_FOUR && (
-                        card.type === CardType.PLUS_FOUR
-                    ) : (
-                        top.color === card.color ||
-                        (card.type === CardType.NUMBER ? top.value === card.value : top.type === card.type) ||
-                        card.color === CardColor.BLACK ||
-                        top.color === CardColor.BLACK && card.color === this.chosenColor
-                    )
-                )) return;
+                if (!this.canPlace(top, card)) {
+                    this.draw(player);
+                    await sleep(this.settings.drawingIntervalCooldown);
+                    this.draw(player);
+                    this.nextTurn();
+                    return;
+                }
             } else if (!((
                 this.settings.interceptions ||
-                (this.turn - this.direction + this.players.length) % this.players.length === player.index // is previous player
+                (this.turn - this.direction + this.players.length) % this.players.length === player.index
             ) && (
-                this.settings.twins === 'alike' ? (
+                this.settings.twins === TwinsMode.ALIKE ? (
                     top.color === card.color &&
                     top.type === card.type &&
                     top.value === card.value &&
                     top.color !== CardColor.BLACK
-                ) : this.settings.twins === 'mixed' ? (
+                ) : this.settings.twins === TwinsMode.MIXED ? (
                     top.type === card.type &&
                     top.value === card.value &&
                     top.color !== CardColor.BLACK
-                ) : this.settings.twins === 'off' ? (
+                ) : this.settings.twins === TwinsMode.OFF ? (
                     false
                 ) : false
-            ))) return;
+            ))) {
+                if (this.settings.interceptions && this.canPlace(previousTop, card)) return;
+                this.draw(player);
+                await sleep(this.settings.drawingIntervalCooldown);
+                this.draw(player);
+                this.nextTurn();
+                return;
+            }
 
             this.turn = player.index; // for interceptions
             player.hand.remove(cardId);
@@ -191,6 +204,7 @@ class UnoRoom extends Room {
             if (card.type === CardType.CHANGE_DIRECTION)
                 await cardsHandlers[card.type]?.call(this);
 
+            this.previousTop = this.top;
             this.top = cardId;
             this.nextTurn();
 
@@ -269,6 +283,21 @@ class UnoRoom extends Room {
         }
     };
 
+    canPlace(top, card) {
+        return (
+            this.plusCount ? top.type === CardType.PLUS_TWO && (
+                card.type === CardType.PLUS_TWO ||
+                card.type === CardType.JOKER
+            ) || top.type === CardType.PLUS_FOUR && (
+                card.type === CardType.PLUS_FOUR
+            ) : (
+                top.color === card.color ||
+                (card.type === CardType.NUMBER ? top.value === card.value : top.type === card.type) ||
+                card.color === CardColor.BLACK ||
+                top.color === CardColor.BLACK && card.color === this.chosenColor
+            )
+        );
+    }
     constructor(...args) {
         super(...args);
         this.players = []; // { nickname, hand }
@@ -277,6 +306,7 @@ class UnoRoom extends Room {
         this.turn = 0;
         this.direction = 1; // -1
         this.top = null;
+        this.previousTop = null;
         this.plusCount = 0;
         this.waitingColorFrom = null;
         this.chosenColor = null;
