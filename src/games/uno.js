@@ -183,7 +183,6 @@ class UnoRoom extends Room {
                 this.draw(player);
                 await sleep(this.settings.drawingIntervalCooldown);
                 this.draw(player);
-                this.nextTurn();
                 return;
             }
 
