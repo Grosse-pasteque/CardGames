@@ -28,6 +28,7 @@
           DECK = await jsonFetch('/data/uno/deck');
 
     const CardColorToName = Object.fromEntries(Object.entries(CardColor).map(([k, v]) => [v, k.toLowerCase()]));
+    const medals = ["🥇", "🥈", "🥉"];
 
     const ws = new WebSocket(`${location.protocol === 'http:' ? 'ws' : 'wss'}://${location.host}?id=${roomId}&nickname=${encodeURIComponent(localStorage.nickname || '')}${roomCode ? '&code=' + roomCode : ''}`);
     ws.onmessage = message => {
@@ -111,9 +112,15 @@
                 discard.appendChild(discardTop);
                 setCurrentColor(DECK[data].color);
                 break;
-            case PayloadType.GAME_SUMMARY: // end game
-                // player id
-                // points
+            case PayloadType.GAME_END: // end game
+                start.hidden = false;
+                popup.innerHTML = '';
+                popup.append(...data.map(([ id, points ], rank) => {
+                    const row = document.createElement('span');
+                    row.innerText = `${medals[rank] || rank + 1} ${players[id].nickname} - ${points} pts`;
+                    return [row, document.createElement('br')];
+                }).flat());
+                showPopup();
                 break;
         }
     };

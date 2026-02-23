@@ -10,7 +10,7 @@
     "GAME_TURN": 6,
     "GAME_STARTED": 7,
     "GAME_BEGIN": 8,
-    "GAME_SUMMARY": 9,
+    "GAME_END": 9,
 
     "HOST_START": 10,
 

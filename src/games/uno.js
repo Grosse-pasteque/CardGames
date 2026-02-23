@@ -143,6 +143,7 @@ class UnoRoom extends Room {
         },
         [PayloadType.DISCARD_CARD]: async function(player, cardId) {
             if (
+                !this.isRunning ||
                 !Number.isInteger(cardId) ||
                 cardId < 0 ||
                 cardId > DECK.length ||
@@ -188,6 +189,7 @@ class UnoRoom extends Room {
 
             this.turn = player.index; // for interceptions
             player.hand.remove(cardId);
+            this.discard.push(cardId);
             if (player.hand.length === 1)
                 player.saidUno = false;
             this.broadcast({
@@ -217,9 +219,22 @@ class UnoRoom extends Room {
             });
 
             this.drewCard = false;
+
+            if (player.hand.length === 0) {
+                this.isRunning = false;
+                this.broadcast({
+                    type: PayloadType.GAME_END,
+                    data: this.players
+                        .map(p => [
+                            p.id,
+                            p.hand.length ? p.hand.map(c => DECK[c].value).reduce((a, b) => a + b) : 0
+                        ])
+                        .sort((a, b) => a[1] - b[1])
+                });
+            }
         },
         [PayloadType.CHOOSE_COLOR]: function(player, color) {
-            if (this.waitingColorFrom !== player || !(
+            if (!this.isRunning || this.waitingColorFrom !== player || !(
                 color === CardColor.RED ||
                 color === CardColor.GREEN ||
                 color === CardColor.BLUE ||
@@ -234,6 +249,7 @@ class UnoRoom extends Room {
         },
         [PayloadType.DRAW_CARD]: function(player) {
             if (
+                !this.isRunning ||
                 this.drewCard ||
                 this.waitingColorFrom ||
                 this.turn !== player.index
@@ -243,6 +259,7 @@ class UnoRoom extends Room {
         },
         [PayloadType.SKIP]: async function(player) {
             if (
+                !this.isRunning ||
                 this.waitingColorFrom ||
                 this.turn !== player.index
             ) return;
@@ -267,7 +284,7 @@ class UnoRoom extends Room {
             }
         },
         [PayloadType.SAY_UNO]: function(player) {
-            if (player.saidUno || player.hand.length !== 1) return;
+            if (!this.isRunning || player.saidUno || player.hand.length !== 1) return;
             player.saidUno = true;
             this.broadcast({
                 type: PayloadType.SAID_UNO,
@@ -276,7 +293,7 @@ class UnoRoom extends Room {
         },
         [PayloadType.SAY_COUNTER_UNO]: async function(player, id) {
             const other = this.players.find(p => p.id === id);
-            if (!other || other.saidUno || other.hand.length !== 1) return;
+            if (!this.isRunning || !other || other.saidUno || other.hand.length !== 1) return;
             this.draw(other);
             await sleep(this.settings.drawingIntervalCooldown);
             this.draw(other);
