@@ -1,4 +1,15 @@
 {
+  "description": "Play many card games on the same website",
+  "bugs": {
+    "url": "https://github.com/Grosse-pasteque/CardGames/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Grosse-pasteque/CardGames.git"
+  },
+  "license": "GPL-3.0-or-later",
+  "author": "Big watermelon",
+  "main": "src/index.js",
   "dependencies": {
     "express": "^5.2.1",
     "fs": "^0.0.1-security",
