@@ -156,9 +156,10 @@ class UnoRoom extends Room {
             const card = DECK[cardId];
             if (this.turn === player.index) {
                 if (!this.canPlace(top, card)) {
-                    this.draw(player);
-                    await sleep(this.settings.drawingIntervalCooldown);
-                    this.draw(player);
+                    for (let i = 0; i < this.settings.wrongCardPenality; i++) {
+                        await sleep(this.settings.drawingIntervalCooldown);
+                        this.draw(player);
+                    }
                     this.nextTurn();
                     return;
                 }
@@ -180,9 +181,10 @@ class UnoRoom extends Room {
                 ) : false
             ))) {
                 if (this.settings.interceptions && this.canPlace(previousTop, card)) return;
-                this.draw(player);
-                await sleep(this.settings.drawingIntervalCooldown);
-                this.draw(player);
+                for (let i = 0; i < this.settings.wrongCardPenality; i++) {
+                    await sleep(this.settings.drawingIntervalCooldown);
+                    this.draw(player);
+                }
                 return;
             } else if (
                 !this.settings.endWithBlackCardAllowed &&
@@ -297,9 +299,10 @@ class UnoRoom extends Room {
         [PayloadType.SAY_COUNTER_UNO]: async function(player, id) {
             const other = this.players.find(p => p.id === id);
             if (!this.isRunning || !other || other.saidUno || other.hand.length !== 1) return;
-            this.draw(other);
-            await sleep(this.settings.drawingIntervalCooldown);
-            this.draw(other);
+            for (let i = 0; i < this.settings.counterUnoPenality; i++) {
+                await sleep(this.settings.drawingIntervalCooldown);
+                this.draw(other);
+            }
         }
     };
 
