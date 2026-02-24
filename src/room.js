@@ -7,6 +7,7 @@ let maxRoomId = 0;
 const idToRoom = new Map;
 const rooms = new Set;
 const stats = {};
+const loadedSettings = {};
 
 
 class Room {
@@ -14,11 +15,11 @@ class Room {
         this.id = maxRoomId++;
         this.gameId = gameId;
         // FIXME: settings don't have verified values
-        const defaultGameSettings = require(`./data/${gameId}/settings`);
+        loadedSettings[gameId] ||= require(`./data/${gameId}/settings`);
         this.settings = {};
         for (const field of defaultSettings)
             this.setSetting(field, settings[field.name]);
-        for (const field of defaultGameSettings)
+        for (const field of loadedSettings[gameId])
             this.setSetting(field, settings[field.name]);
         this.clientId = 0;
         this.clients = new Set;
@@ -134,4 +135,4 @@ function getRoomStatus(room) {
     }
 }
 
-module.exports = { Room, rooms, stats, idToRoom, getRoomStatus };
+module.exports = { Room, rooms, stats, idToRoom, getRoomStatus, loadedSettings };
