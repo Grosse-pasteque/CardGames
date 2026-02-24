@@ -184,7 +184,11 @@ class UnoRoom extends Room {
                 await sleep(this.settings.drawingIntervalCooldown);
                 this.draw(player);
                 return;
-            }
+            } else if (
+                !this.settings.endWithBlackCardAllowed &&
+                player.hand.length === 1 &&
+                card.color === CardColor.BLACK
+            ) return; // NOTE: no penality ?
 
             this.turn = player.index; // for interceptions
             player.hand.remove(cardId);
