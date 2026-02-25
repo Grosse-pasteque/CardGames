@@ -3,6 +3,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const WebSocket = require('ws');
+const morgan = require('morgan');
 
 const Games = require('./games');
 const { Room, rooms, stats, idToRoom, getRoomStatus } = require('./room');
@@ -14,6 +15,7 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+// app.use(morgan('combined'))
 app.set('trust proxy', true);
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -29,8 +31,7 @@ app.get('/games', (req, res) => res.status(200).send(Object.values(stats)));
 app.get('/rooms', (req, res) => res.status(200).send([...rooms]
     .filter(room => room.settings.public)
     .map(getRoomStatus)));
-app.post('/make', cooldown(60), (req, res) => {
-    console.log(req.body)
+app.post('/make', cooldown(5), (req, res) => {
     const gameId = req.body.game;
     if (gameId in Games) {
         delete req.body.game;
@@ -53,9 +54,18 @@ function cooldown(s) {
     };
 }
 
+function getClientIp(req) {
+    const xRealIp = req.headers['x-real-ip'];
+    if (xRealIp) return xRealIp;
+    const xForwardedFor = req.headers['x-forwarded-for'];
+    if (xForwardedFor)
+        return xForwardedFor.split(',')[0].trim();
+    return req.socket.remoteAddress;
+}
+
 const ipsOnCooldown = new Map;
 wss.on('connection', (ws, req) => {
-    ws.ip = ws._socket.remoteAddress;
+    ws.ip = getClientIp(req);
     const cooldown = ipsOnCooldown.get(ws.ip);
     const now = Date.now();
     if (cooldown && cooldown > now)
