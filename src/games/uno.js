@@ -161,6 +161,10 @@ class UnoRoom extends Room {
                         this.draw(player);
                     }
                     this.nextTurn();
+                    this.broadcast({
+                        type: PayloadType.GAME_TURN,
+                        data: this.players[this.turn].id
+                    });
                     return;
                 }
             } else if (!((
