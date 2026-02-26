@@ -3,7 +3,6 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const WebSocket = require('ws');
-const morgan = require('morgan');
 
 const Games = require('./games');
 const { Room, rooms, stats, idToRoom, getRoomStatus } = require('./room');
@@ -15,7 +14,6 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// app.use(morgan('combined'))
 app.set('trust proxy', true);
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
